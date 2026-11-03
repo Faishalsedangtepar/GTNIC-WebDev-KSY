@@ -37,3 +37,4 @@ Route::middleware('auth')->group(function () {
         Route::view('/dashboard', 'stok.stok')->name('dashboard');
     });
 });
+
