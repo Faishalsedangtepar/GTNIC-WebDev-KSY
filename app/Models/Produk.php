@@ -8,5 +8,5 @@ class Produk extends Model
 {
     protected $table = 'produk';
     public $timestamps = false;
-    protected $fillable = ['nama', 'kategori_id', 'satuan_id', 'deskripsi', 'harga_jual', 'stok'];
+    protected $fillable = ['sku', 'nama', 'kategori_id', 'satuan_id', 'deskripsi', 'harga_jual', 'stok', 'stok_minimum'];
 }

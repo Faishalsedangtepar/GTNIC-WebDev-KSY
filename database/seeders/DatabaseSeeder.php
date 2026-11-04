@@ -25,5 +25,7 @@ class DatabaseSeeder extends Seeder
                 ['password_hash' => Hash::make($password), 'role' => $role],
             );
         }
+
+        $this->call(KatalogSeeder::class);
     }
 }

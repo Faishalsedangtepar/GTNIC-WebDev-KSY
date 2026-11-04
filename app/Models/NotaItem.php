@@ -8,5 +8,5 @@ class NotaItem extends Model
 {
     protected $table = 'nota_item';
     public $timestamps = false;
-    protected $fillable = ['nota_id', 'produk_id', 'harga_satuan', 'qty'];
+    protected $fillable = ['nota_id', 'produk_id', 'keterangan', 'harga_satuan', 'qty'];
 }
