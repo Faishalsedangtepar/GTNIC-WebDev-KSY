@@ -25,12 +25,17 @@ Route::middleware('auth')->group(function () {
         };
     })->name('dashboard');
 
+    Route::view('/riwayat', 'kasir.riwayat')->name('riwayat');
+    Route::view('/pembayaran', 'kasir.pembayaran')->name('pembayaran');
+
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::view('/dashboard', 'admin.admin')->name('dashboard');
     });
 
     Route::middleware('role:kasir')->prefix('kasir')->name('kasir.')->group(function () {
         Route::view('/dashboard', 'kasir.kasir')->name('dashboard');
+        Route::view('/riwayat', 'kasir.riwayat')->name('riwayat');
+        Route::view('/pembayaran', 'kasir.pembayaran')->name('pembayaran');
     });
 
     Route::middleware('role:gudang,admin')->prefix('stok')->name('stok.')->group(function () {

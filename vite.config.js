@@ -7,10 +7,10 @@ export default defineConfig({
         laravel({
             input: ['resources/css/app.css',
                     'resources/js/app.js',
-                    'resources/css/login.css',
                     'resources/js/login.js',
-                    'resources/css/kasir.css',
-                    'resources/js/kasir.js',],
+                    'resources/js/kasir.js',
+                    'resources/js/riwayat.js',
+                    'resources/js/pembayaran.js',],
             refresh: true,
         }),
         tailwindcss(),
