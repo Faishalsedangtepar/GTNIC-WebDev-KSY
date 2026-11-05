@@ -1,7 +1,133 @@
-<h1>Dashboard</h1>
-<p>Halo, {{ auth()->user()->username }} ({{ auth()->user()->role }})</p>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Laporan Keuangan - Aura Material</title>
 
-<form method="POST" action="{{ route('logout') }}">
-    @csrf
-    <button type="submit">Logout</button>
-</form>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+  @vite(['resources/css/admin.css', 'resources/js/laporanstok.js'])
+
+  <style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style>
+</head>
+<body class="bg-surface text-on-surface font-body-md text-body-md overflow-y-auto overflow-x-hidden min-h-screen"><div class="fixed inset-0 bg-primary/60 backdrop-blur-sm z-50 lg:hidden hidden" id="mobile-drawer-backdrop" onclick="closeSidebar();"></div><aside class="fixed inset-y-0 left-0 w-64 bg-primary-container text-on-primary z-50 flex flex-col transition-transform duration-300 transform lg:translate-x-0 -translate-x-full lg:fixed top-0 bottom-0 h-screen overflow-y-auto" id="mobile-sidebar"><div class="h-16 flex items-center justify-between px-gutter-desktop bg-tertiary-container shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-lg bg-secondary-container flex items-center justify-center"><span class="material-symbols-outlined text-on-secondary text-[20px]">construction</span></div><div class="flex flex-col"><span class="font-headline-md text-title-md font-bold tracking-tight text-on-primary leading-none">AURA MATERIAL</span><span class="font-label-md text-label-md text-on-primary-container tracking-wider uppercase mt-space-xs">Depot &amp; Toko Besi</span></div></div><button class="lg:hidden text-on-primary-container hover:text-on-primary" onclick="closeSidebar();" type="button"><span class="material-symbols-outlined">close</span></button></div><div class="px-gutter-desktop py-space-md"></div><nav class="flex-1 px-space-md py-space-xs space-y-space-xs overflow-y-auto" data-active-classes="bg-secondary-container text-on-secondary font-bold rounded-lg shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><a href="{{ route('admin.laporanstok') }}" data-path="data-stok-barang" class="{{ request()->routeIs('admin.laporanstok') ? 'sidebar-nav-item flex items-center gap-space-md px-space-md py-space-md rounded-lg transition-colors cursor-pointer bg-secondary-container text-on-secondary font-bold shadow-[0_1px_8px_rgba(0,0,0,0.04)]' : 'sidebar-nav-item flex items-center gap-space-md px-space-md py-space-md rounded-lg hover:bg-tertiary-container hover:text-on-primary transition-colors cursor-pointer text-on-primary-container' }}" @if(request()->routeIs('admin.laporanstok')) aria-current="page" @endif><span class="material-symbols-outlined text-[20px]">inventory_2</span><span class="font-title-md text-title-md">Data Stok Barang</span></a><a href="{{ route('admin.riwayatbulanan') }}" data-path="riwayat-nota" class="{{ request()->routeIs('admin.riwayatbulanan') ? 'sidebar-nav-item flex items-center gap-space-md px-space-md py-space-md rounded-lg transition-colors cursor-pointer bg-secondary-container text-on-secondary font-bold shadow-[0_1px_8px_rgba(0,0,0,0.04)]' : 'sidebar-nav-item flex items-center gap-space-md px-space-md py-space-md rounded-lg hover:bg-tertiary-container hover:text-on-primary transition-colors cursor-pointer text-on-primary-container' }}" @if(request()->routeIs('admin.riwayatbulanan')) aria-current="page" @endif><span class="material-symbols-outlined text-[20px]">receipt_long</span><span class="font-title-md text-title-md">Riwayat Nota</span></a><a href="{{ route('admin.dashboard') }}" data-path="laporan-keuangan" class="{{ request()->routeIs('admin.dashboard') ? 'sidebar-nav-item flex items-center gap-space-md px-space-md py-space-md rounded-lg transition-colors cursor-pointer bg-secondary-container text-on-secondary font-bold shadow-[0_1px_8px_rgba(0,0,0,0.04)]' : 'sidebar-nav-item flex items-center gap-space-md px-space-md py-space-md rounded-lg hover:bg-tertiary-container hover:text-on-primary transition-colors cursor-pointer text-on-primary-container' }}" @if(request()->routeIs('admin.dashboard')) aria-current="page" @endif><span class="material-symbols-outlined text-[20px]">analytics</span><span class="font-title-md text-title-md">Laporan Keuangan</span></a></nav></aside><div class="lg:ml-64 flex flex-col min-h-screen flex-1 w-full overflow-y-auto"><header class="fixed top-0 left-0 lg:left-64 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl z-40 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-gutter lg:px-gutter-desktop flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md"><button class="lg:hidden p-space-xs text-on-surface-variant hover:text-on-surface rounded-lg hover:bg-surface-container" onclick="openSidebar();" type="button"><span class="material-symbols-outlined">menu</span></button></div><div class="flex items-center gap-space-sm lg:gap-space-md"><div class="hidden md:flex items-center gap-space-sm bg-surface-container-low px-space-md py-space-xs rounded-lg text-on-surface-variant"><span class="material-symbols-outlined text-[18px]">calendar_today</span><span class="font-body-md text-body-md text-on-surface font-semibold">14 Mei 2025</span></div><div class="h-6 w-px bg-surface-container-highest hidden sm:block"></div><div class="flex items-center gap-space-sm pl-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="hidden sm:flex flex-col text-left"><span class="font-title-md text-title-md text-on-surface font-bold leading-none">Supardi Admin</span><span class="font-label-md text-label-md text-on-surface-variant">Super Admin</span></div></div></div></div></header><main class="w-full pt-16 bg-surface min-h-[calc(100vh-4rem)] p-gutter lg:p-gutter-desktop pb-24"><div class="flex flex-col w-full space-y-space-xl">
+<!-- SECTION 1: HEADER & FILTER PERIODE -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-lg bg-surface-container-lowest p-space-xl rounded-xl shadow-sm">
+<div class="flex flex-col space-y-space-xs">
+<div class="flex items-center gap-space-sm text-secondary">
+
+
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">Laporan Pendapatan &amp; Laba Kotor</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+        Rekapitulasi total omzet dan estimasi laba kotor penjualan material selama satu bulan berjalan tanpa potongan operasional atau pengeluaran.
+      </p>
+</div>
+<!-- Actions & Filter Controls -->
+<div class="flex flex-wrap items-center gap-space-sm">
+<div class="relative inline-flex items-center bg-surface-container-low rounded-lg px-space-md py-space-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px] mr-space-xs">calendar_month</span>
+<select class="bg-transparent font-title-md text-title-md text-on-surface font-semibold focus:outline-none cursor-pointer pr-space-md">
+<option selected="" value="2026-05">Bulan Ini (Mei 2026)</option>
+<option value="2026-04">April 2026</option>
+<option value="2026-03">Maret 2026</option>
+<option value="2026-02">Februari 2026</option>
+</select>
+</div>
+<button class="inline-flex items-center gap-space-xs bg-surface-container-low hover:bg-surface-container text-on-surface font-title-md text-title-md px-space-md py-space-sm rounded-lg transition-colors shadow-sm" onclick="window.print()" type="button">
+<span class="material-symbols-outlined text-[18px]">print</span>
+<span class="">Cetak Ringkasan</span>
+</button>
+<button class="inline-flex items-center gap-space-xs bg-primary-container hover:bg-tertiary-container text-on-primary font-title-md text-title-md px-space-md py-space-sm rounded-lg transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">file_download</span>
+<span class="">Ekspor Excel</span>
+</button>
+</div>
+</div>
+<!-- SECTION 2: KARTU RINGKASAN UTAMA (3 KARTU BERSIH & FOKUS) -->
+<div class="grid grid-cols-1 gap-space-lg lg:grid-cols-2">
+<!-- Card 1: Total Pendapatan Kotor (Omzet) -->
+<div class="flex flex-col justify-between bg-surface-container-lowest p-space-xl rounded-xl shadow-sm relative overflow-hidden">
+<div class="space-y-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-lg text-label-lg text-on-surface-variant uppercase tracking-wider">Omzet Per Bulan</span>
+
+</div>
+<div class="pt-space-xs">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tight block">Rp 284.500.000</span>
+</div>
+</div>
+<div class="mt-space-lg pt-space-md bg-surface-container-low/60 -mx-space-xl -mb-space-xl px-space-xl pb-space-md flex items-center justify-between">
+<div class="flex items-center gap-space-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">receipt_long</span>
+<span class="font-body-md text-body-md">428 Transaksi / Nota Selesai</span>
+</div>
+
+</div>
+</div>
+<!-- Card 2: Total Laba Kotor -->
+
+<!-- Card 3: Rata-rata Penjualan Harian -->
+<div class="flex flex-col justify-between bg-surface-container-lowest p-space-xl rounded-xl shadow-sm relative overflow-hidden">
+<div class="space-y-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-lg text-label-lg text-on-surface-variant uppercase tracking-wider">Rata-Rata Harian</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">calendar_today</span>
+</div>
+<div class="pt-space-xs">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tight block">Rp 9.483.333 <span class="font-body-md text-body-md text-on-surface-variant font-normal">/ hari</span></span>
+</div>
+</div>
+<div class="mt-space-lg pt-space-md bg-surface-container-low/60 -mx-space-xl -mb-space-xl px-space-xl pb-space-md flex items-center justify-between">
+<div class="flex items-center gap-space-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">pace</span>
+<span class="font-body-md text-body-md">Rata-rata 14 transaksi per hari</span>
+</div>
+
+</div>
+</div>
+</div>
+<!-- SECTION 3: KONTRIBUSI PENDAPATAN PER KATEGORI BARANG -->
+<div class="bg-surface-container-lowest p-space-xl rounded-xl shadow-sm flex flex-col space-y-space-lg"><div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs"><div class="flex flex-col"><h2 class="font-title-lg text-title-lg font-bold text-on-surface">Kontribusi Omzet per Kategori</h2><p class="font-body-md text-body-md text-on-surface-variant">Distribusi pendapatan penjualan menurut kelompok barang.</p></div><span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider font-semibold">5 Kategori Material</span></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-x-space-xl gap-y-space-lg pt-space-xs"><div class="flex flex-col space-y-space-xs"><div class="flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="w-2.5 h-2.5 rounded-full bg-secondary"></span><span class="font-title-md text-title-md font-bold text-on-surface">Semen &amp; Mortar</span></div><div class="flex items-center gap-space-sm"><span class="font-tabular-numeric text-tabular-numeric text-on-surface font-bold">Rp 98.200.000</span><span class="font-label-md text-label-md text-on-surface-variant">34.5%</span></div></div><div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden"><div class="bg-secondary h-full rounded-full" style="width: 34.5%"></div></div></div><div class="flex flex-col space-y-space-xs"><div class="flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="w-2.5 h-2.5 rounded-full bg-primary-container"></span><span class="font-title-md text-title-md font-bold text-on-surface">Besi &amp; Baja Tulang</span></div><div class="flex items-center gap-space-sm"><span class="font-tabular-numeric text-tabular-numeric text-on-surface font-bold">Rp 85.350.000</span><span class="font-label-md text-label-md text-on-surface-variant">30.0%</span></div></div><div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden"><div class="bg-primary-container h-full rounded-full" style="width: 30.0%"></div></div></div><div class="flex flex-col space-y-space-xs"><div class="flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="w-2.5 h-2.5 rounded-full bg-secondary-container"></span><span class="font-title-md text-title-md font-bold text-on-surface">Pasir &amp; Batu Bata</span></div><div class="flex items-center gap-space-sm"><span class="font-tabular-numeric text-tabular-numeric text-on-surface font-bold">Rp 45.100.000</span><span class="font-label-md text-label-md text-on-surface-variant">15.8%</span></div></div><div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden"><div class="bg-secondary-container h-full rounded-full" style="width: 15.8%"></div></div></div><div class="flex flex-col space-y-space-xs"><div class="flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="w-2.5 h-2.5 rounded-full bg-on-tertiary-container"></span><span class="font-title-md text-title-md font-bold text-on-surface">Cat &amp; Perlengkapan Sanitasi</span></div><div class="flex items-center gap-space-sm"><span class="font-tabular-numeric text-tabular-numeric text-on-surface font-bold">Rp 32.850.000</span><span class="font-label-md text-label-md text-on-surface-variant">11.5%</span></div></div><div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden"><div class="bg-on-tertiary-container h-full rounded-full" style="width: 11.5%"></div></div></div><div class="flex flex-col space-y-space-xs lg:col-span-2"><div class="flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="w-2.5 h-2.5 rounded-full bg-outline"></span><span class="font-title-md text-title-md font-bold text-on-surface">Kayu &amp; Triplek</span></div><div class="flex items-center gap-space-sm"><span class="font-tabular-numeric text-tabular-numeric text-on-surface font-bold">Rp 23.000.000</span><span class="font-label-md text-label-md text-on-surface-variant">8.2%</span></div></div><div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden"><div class="bg-outline h-full rounded-full" style="width: 8.2%"></div></div></div></div></div>
+<!-- SECTION 4: TABEL REKAPAN PENDAPATAN HARIAN (1 BULAN) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm flex flex-col overflow-hidden">
+<div class="p-space-xl flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
+<div>
+<h2 class="font-title-lg text-title-lg font-bold text-on-surface">Rekapan Harian Penjualan (Mei 2026)</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Rincian pendapatan kotor, estimasi laba, dan pencatatan transaksi per hari.</p>
+</div>
+<div class="flex items-center gap-space-sm text-on-surface-variant font-label-md text-label-md">
+
+
+</div>
+</div>
+<!-- Data Table Container with Spacious Layout & High Horizontal Scrollability -->
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left whitespace-nowrap"><thead><tr class="bg-surface-container-low text-on-surface-variant font-label-md text-label-md uppercase tracking-wider"><th class="py-space-md px-space-xl">Tanggal</th><th class="py-space-md px-space-lg text-center">Jumlah Transaksi</th><th class="py-space-md px-space-xl text-right">Pendapatan Kotor</th><th class="py-space-md px-space-xl text-center">Status Setoran</th></tr></thead><tbody class="divide-y divide-surface-container text-on-surface font-body-md text-body-md"><tr class="hover:bg-surface-container-low/40 transition-colors"><td class="py-space-md px-space-xl font-title-md text-title-md font-bold">01 Mei 2026</td><td class="py-space-md px-space-lg text-center font-tabular-numeric text-tabular-numeric">16 Nota</td><td class="py-space-md px-space-xl text-right font-tabular-numeric text-tabular-numeric font-semibold">Rp 11.250.000</td><td class="py-space-md px-space-xl text-center"><span class="inline-flex items-center gap-1 bg-surface-container-high text-on-surface font-label-md text-label-md px-space-sm py-0.5 rounded-full font-bold"><span class="material-symbols-outlined text-[14px] text-secondary">check_circle</span> Masuk Kasir</span></td></tr><tr class="hover:bg-surface-container-low/40 transition-colors bg-surface-container-lowest"><td class="py-space-md px-space-xl font-title-md text-title-md font-bold">02 Mei 2026</td><td class="py-space-md px-space-lg text-center font-tabular-numeric text-tabular-numeric">14 Nota</td><td class="py-space-md px-space-xl text-right font-tabular-numeric text-tabular-numeric font-semibold">Rp 9.800.000</td><td class="py-space-md px-space-xl text-center"><span class="inline-flex items-center gap-1 bg-surface-container-high text-on-surface font-label-md text-label-md px-space-sm py-0.5 rounded-full font-bold"><span class="material-symbols-outlined text-[14px] text-secondary">check_circle</span> Masuk Kasir</span></td></tr><tr class="hover:bg-surface-container-low/40 transition-colors"><td class="py-space-md px-space-xl font-title-md text-title-md font-bold">03 Mei 2026</td><td class="py-space-md px-space-lg text-center font-tabular-numeric text-tabular-numeric">11 Nota</td><td class="py-space-md px-space-xl text-right font-tabular-numeric text-tabular-numeric font-semibold">Rp 7.450.000</td><td class="py-space-md px-space-xl text-center"><span class="inline-flex items-center gap-1 bg-surface-container-high text-on-surface font-label-md text-label-md px-space-sm py-0.5 rounded-full font-bold"><span class="material-symbols-outlined text-[14px] text-secondary">check_circle</span> Masuk Kasir</span></td></tr><tr class="hover:bg-surface-container-low/40 transition-colors bg-surface-container-lowest"><td class="py-space-md px-space-xl font-title-md text-title-md font-bold">04 Mei 2026</td><td class="py-space-md px-space-lg text-center font-tabular-numeric text-tabular-numeric">19 Nota</td><td class="py-space-md px-space-xl text-right font-tabular-numeric text-tabular-numeric font-semibold">Rp 14.300.000</td><td class="py-space-md px-space-xl text-center"><span class="inline-flex items-center gap-1 bg-surface-container-high text-on-surface font-label-md text-label-md px-space-sm py-0.5 rounded-full font-bold"><span class="material-symbols-outlined text-[14px] text-secondary">check_circle</span> Masuk Kasir</span></td></tr><tr class="hover:bg-surface-container-low/40 transition-colors"><td class="py-space-md px-space-xl font-title-md text-title-md font-bold">05 Mei 2026</td><td class="py-space-md px-space-lg text-center font-tabular-numeric text-tabular-numeric">15 Nota</td><td class="py-space-md px-space-xl text-right font-tabular-numeric text-tabular-numeric font-semibold">Rp 10.600.000</td><td class="py-space-md px-space-xl text-center"><span class="inline-flex items-center gap-1 bg-surface-container-high text-on-surface font-label-md text-label-md px-space-sm py-0.5 rounded-full font-bold"><span class="material-symbols-outlined text-[14px] text-secondary">check_circle</span> Masuk Kasir</span></td></tr><tr class="hover:bg-surface-container-low/40 transition-colors bg-surface-container-lowest"><td class="py-space-md px-space-xl font-title-md text-title-md font-bold">06 Mei 2026</td><td class="py-space-md px-space-lg text-center font-tabular-numeric text-tabular-numeric">18 Nota</td><td class="py-space-md px-space-xl text-right font-tabular-numeric text-tabular-numeric font-semibold">Rp 12.850.000</td><td class="py-space-md px-space-xl text-center"><span class="inline-flex items-center gap-1 bg-surface-container-high text-on-surface font-label-md text-label-md px-space-sm py-0.5 rounded-full font-bold"><span class="material-symbols-outlined text-[14px] text-secondary">check_circle</span> Masuk Kasir</span></td></tr><tr class="hover:bg-surface-container-low/40 transition-colors"><td class="py-space-md px-space-xl font-title-md text-title-md font-bold">07 Mei 2026</td><td class="py-space-md px-space-lg text-center font-tabular-numeric text-tabular-numeric">13 Nota</td><td class="py-space-md px-space-xl text-right font-tabular-numeric text-tabular-numeric font-semibold">Rp 8.900.000</td><td class="py-space-md px-space-xl text-center"><span class="inline-flex items-center gap-1 bg-surface-container-high text-on-surface font-label-md text-label-md px-space-sm py-0.5 rounded-full font-bold"><span class="material-symbols-outlined text-[14px] text-secondary">check_circle</span> Masuk Kasir</span></td></tr><tr class="hover:bg-surface-container-low/40 transition-colors bg-surface-container-lowest"><td class="py-space-md px-space-xl font-title-md text-title-md font-bold">08 Mei 2026</td><td class="py-space-md px-space-lg text-center font-tabular-numeric text-tabular-numeric">12 Nota</td><td class="py-space-md px-space-xl text-right font-tabular-numeric text-tabular-numeric font-semibold">Rp 7.800.000</td><td class="py-space-md px-space-xl text-center"><span class="inline-flex items-center gap-1 bg-surface-container-high text-on-surface font-label-md text-label-md px-space-sm py-0.5 rounded-full font-bold"><span class="material-symbols-outlined text-[14px] text-secondary">check_circle</span> Masuk Kasir</span></td></tr><tr class="hover:bg-surface-container-low/40 transition-colors"><td class="py-space-md px-space-xl font-title-md text-title-md font-bold">09 Mei 2026</td><td class="py-space-md px-space-lg text-center font-tabular-numeric text-tabular-numeric">17 Nota</td><td class="py-space-md px-space-xl text-right font-tabular-numeric text-tabular-numeric font-semibold">Rp 13.100.000</td><td class="py-space-md px-space-xl text-center"><span class="inline-flex items-center gap-1 bg-surface-container-high text-on-surface font-label-md text-label-md px-space-sm py-0.5 rounded-full font-bold"><span class="material-symbols-outlined text-[14px] text-secondary">check_circle</span> Masuk Kasir</span></td></tr><tr class="hover:bg-surface-container-low/40 transition-colors bg-surface-container-lowest"><td class="py-space-md px-space-xl font-title-md text-title-md font-bold">10 Mei 2026</td><td class="py-space-md px-space-lg text-center font-tabular-numeric text-tabular-numeric">8 Nota</td><td class="py-space-md px-space-xl text-right font-tabular-numeric text-tabular-numeric font-semibold">Rp 5.200.000</td><td class="py-space-md px-space-xl text-center"><span class="inline-flex items-center gap-1 bg-surface-container-high text-on-surface font-label-md text-label-md px-space-sm py-0.5 rounded-full font-bold"><span class="material-symbols-outlined text-[14px] text-secondary">check_circle</span> Masuk Kasir</span></td></tr><tr class="bg-surface-container-low/30"><td class="py-space-sm px-space-xl text-center font-label-md text-label-md text-on-surface-variant tracking-wider uppercase" colspan="4">• • • Menampilkan 10 dari 30 hari rekapitulasi data Mei 2026 • • •</td></tr><tr class="hover:bg-surface-container-low/40 transition-colors"><td class="py-space-md px-space-xl font-title-md text-title-md font-bold">29 Mei 2026</td><td class="py-space-md px-space-lg text-center font-tabular-numeric text-tabular-numeric">15 Nota</td><td class="py-space-md px-space-xl text-right font-tabular-numeric text-tabular-numeric font-semibold">Rp 10.400.000</td><td class="py-space-md px-space-xl text-center"><span class="inline-flex items-center gap-1 bg-surface-container-high text-on-surface font-label-md text-label-md px-space-sm py-0.5 rounded-full font-bold"><span class="material-symbols-outlined text-[14px] text-secondary">check_circle</span> Masuk Kasir</span></td></tr><tr class="hover:bg-surface-container-low/40 transition-colors bg-surface-container-lowest"><td class="py-space-md px-space-xl font-title-md text-title-md font-bold">30 Mei 2026</td><td class="py-space-md px-space-lg text-center font-tabular-numeric text-tabular-numeric">16 Nota</td><td class="py-space-md px-space-xl text-right font-tabular-numeric text-tabular-numeric font-semibold">Rp 11.500.000</td><td class="py-space-md px-space-xl text-center"><span class="inline-flex items-center gap-1 bg-surface-container-high text-on-surface font-label-md text-label-md px-space-sm py-0.5 rounded-full font-bold"><span class="material-symbols-outlined text-[14px] text-secondary">check_circle</span> Masuk Kasir</span></td></tr></tbody><tfoot><tr class="bg-primary-container text-on-primary font-headline-md text-headline-md font-bold"><td class="py-space-lg px-space-xl">TOTAL AKUMULASI (1 BULAN)</td><td class="py-space-lg px-space-lg text-center font-tabular-numeric text-tabular-numeric text-primary-fixed">428 Nota</td><td class="py-space-lg px-space-xl text-right font-tabular-numeric text-tabular-numeric">Rp 284.500.000</td><td class="py-space-lg px-space-xl text-center"><span class="inline-flex items-center gap-1 bg-tertiary-container text-on-primary-fixed font-label-md text-label-md px-space-md py-1 rounded-full uppercase">Semua Lunas</span></td></tr></tfoot></table>
+</div>
+</div>
+<!-- SECTION 5: CATATAN PENGAWASAN FINANSIAL (MINIMALIS) -->
+<div class="p-space-lg bg-surface-container-low rounded-xl flex items-start gap-space-md">
+<span class="material-symbols-outlined text-secondary text-[22px] flex-shrink-0 mt-0.5">info</span>
+<div class="flex flex-col space-y-space-xs text-on-surface-variant font-body-md text-body-md">
+<span class="font-title-md text-title-md font-bold text-on-surface">Catatan Finansial Penjualan</span>
+<p class="">
+        Semua angka pendapatan kotor merefleksikan transaksi kasir POS yang telah valid dan barang telah diterbitkan surat jalan / diserahkan langsung. Laba kotor dihitung dari selisih harga jual dengan harga modal beli awal barang secara real-time. Tidak memperhitungkan beban operasional listrik, gaji pegawai, maupun bahan bakar armada kirim.
+      </p>
+</div>
+</div>
+</div></main></div>
+<div id="nav-interactivity-handler" style="display: none;" data-init="true"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onload="window.setActiveNav = function(el) { var items = document.querySelectorAll('.sidebar-nav-item'); items.forEach(function(item) { item.classList.remove('bg-secondary-container', 'text-on-secondary', 'font-bold', 'shadow-[0_1px_8px_rgba(0,0,0,0.04)]'); item.classList.add('text-on-primary-container'); }); el.classList.remove('text-on-primary-container'); el.classList.add('bg-secondary-container', 'text-on-secondary', 'font-bold', 'shadow-[0_1px_8px_rgba(0,0,0,0.04)]'); if (window.innerWidth &lt; 1024 &amp;&amp; typeof closeSidebar === 'function') { closeSidebar(); } };" alt=""></div>
+
+<div id="snapdom-sandbox" data-snapdom-sandbox="true" aria-hidden="true" style="position: absolute; left: -9999px; top: -9999px; width: 0px; height: 0px; overflow: hidden;"></div>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,8 @@
+@import "tailwindcss" source(none);
+@plugin "@tailwindcss/forms";
+
+@import "./tema-stok.css";
+
+/* Lokasi file yang menggunakan class Tailwind */
+@source "../views/admin";
+@source "../js/laporanstok.js";

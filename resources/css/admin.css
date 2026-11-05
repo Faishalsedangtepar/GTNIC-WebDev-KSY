@@ -1,0 +1,10 @@
+@import 'tailwindcss' source(none);
+@import './aura-theme.css';
+@import './aura-typography.css';
+
+/* Hanya halaman yang memakai ukuran font bernama */
+@source '../views/admin';
+@source '../views/kasir/riwayat.blade.php';
+@source '../js/riwayat.js';
+@source '../js/laporan.js';
+@source '../js/admin-riwayat.js';
