@@ -47,6 +47,8 @@
   </div>
 </header>
 
+
+
 <!-- ================= MAIN ================= -->
 <main class="flex-1 flex flex-col relative w-full pt-16 bg-surface">
 
@@ -264,7 +266,7 @@
 
       <!-- Kolom kanan bawah: catatan -->
       <div class="flex flex-col gap-1.5">
-        <label class="text-xs font-bold text-on-surface flex items-center gap-1" for="item-notes">
+        <label class="2text-xs font-bold text-on-surface flex items-center gap-1" for="item-notes">
           <span class="material-symbols-outlined text-[15px] text-on-surface-variant">edit_note</span>
           Catatan Item / Proyek (Opsional)
         </label>
@@ -283,10 +285,6 @@
   </div>
 </div>
 
-<!-- logout sementara -->
-<form method="POST" action="{{ route('logout') }}">
-    @csrf
-    <button type="submit">Logout</button>
-</form>
+
 </body>
 </html>
