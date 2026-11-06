@@ -229,6 +229,9 @@ function renderCartDrawer() {
   const container = document.getElementById('cart-items-container');
   if (!container) return;
 
+  // Penjaga sidebar: item dengan jumlah 0, minus, atau bukan angka bulat tidak pernah ditampilkan/dihitung
+  cartItems = cartItems.filter(it => Number.isInteger(it.qty) && it.qty > 0);
+
   if (cartItems.length === 0) {
     container.innerHTML = `
       <div class="py-8 text-center text-xs text-on-surface-variant flex flex-col items-center gap-2">
@@ -387,8 +390,15 @@ function changeQuantityStep(delta) {
 function onQuantityInput(val) {
   const parsed = parseInt(val, 10);
   const maxStock = activeProduct.stock || 999;
-  if (isNaN(parsed) || parsed < 1) {
-    currentQty = 1;
+  if (val === '' || isNaN(parsed)) {
+    // Kolom dikosongkan / sedang mengetik: tanpa peringatan, tapi belum boleh ditambahkan
+    currentQty = 0;
+  } else if (parsed < 1) {
+    // Nilai 0 atau minus: tutup modal lalu tampilkan peringatan (toast tampak jelas setelah modal tertutup)
+    currentQty = 0;
+    closeQuantityModal();
+    showToast('Angka tidak boleh kurang dari nol (minimal 1)');
+    return;
   } else if (parsed > maxStock) {
     currentQty = maxStock;
     showToast(`Maksimal stok tersedia ${maxStock} ${activeProduct.unit}`);
@@ -421,6 +431,11 @@ function updateModalCalculation() {
 }
 
 function submitQuantityModal() {
+  // Penjaga terakhir: jumlah di kolom harus angka bulat >= 1 sebelum masuk nota
+  if (!Number.isInteger(currentQty) || currentQty < 1) {
+    showToast('Jumlah minimal 1. Angka tidak boleh kurang dari nol');
+    return;
+  }
   const note = document.getElementById('item-notes').value.trim();
   const existing = cartItems.find(it => String(it.id) === String(activeProduct.id));
   if (existing) {
