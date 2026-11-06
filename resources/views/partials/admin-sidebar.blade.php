@@ -22,7 +22,7 @@
          @if(request()->routeIs('admin.dashboard')) aria-current="page" @endif>
         <div class="flex items-center gap-[0.75rem]">
           <span class="material-symbols-outlined text-[20px]">inventory_2</span>
-          <span class="text-[15px] leading-[20px] font-semibold">Data Stok Barang</span>
+          <span class="text-[15px] leading-[20px] font-semibold">Laporan Keuangan</span>
         </div>
       </a>
       <a href="{{ route('admin.riwayatbulanan') }}"
@@ -38,7 +38,7 @@
          @if(request()->routeIs('admin.laporanstok')) aria-current="page" @endif>
         <div class="flex items-center gap-[0.75rem]">
           <span class="material-symbols-outlined text-[20px]">analytics</span>
-          <span class="text-[15px] leading-[20px] font-semibold">Laporan Keuangan</span>
+          <span class="text-[15px] leading-[20px] font-semibold">Data Stok Barang</span>
         </div>
       </a>
     </nav>
