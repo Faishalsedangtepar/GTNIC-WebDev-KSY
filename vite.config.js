@@ -15,8 +15,9 @@ export default defineConfig({
                     'resources/js/admin.js',
                     'resources/css/admin.css',
                     'resources/css/stok.css',
-                    'resources/js/riwayatbulanan.js'
-                ],
+                    'resources/js/riwayatbulanan.js',
+                    'resources/js/sidebar.js'
+                    ],
             refresh: true,
         }),
         tailwindcss(),

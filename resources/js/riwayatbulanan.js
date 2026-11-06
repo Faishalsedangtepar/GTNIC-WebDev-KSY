@@ -536,26 +536,10 @@ function formatRp(num) {
 }
 
 // Toggle Sidebar untuk Mobile
-function toggleSidebar(show) {
-  const sidebar = document.getElementById('mainSidebar');
-  const backdrop = document.getElementById('sidebarBackdrop');
-  if (show) {
-    sidebar.classList.remove('-translate-x-full');
-    backdrop.classList.remove('hidden');
-  } else {
-    sidebar.classList.add('-translate-x-full');
-    backdrop.classList.add('hidden');
-  }
-}
+
 
 // Fokuskan input saat F2 ditekan
-function focusSearchInput() {
-  const input = document.getElementById('searchInput');
-  if (input) {
-    input.focus();
-    input.select();
-  }
-}
+
 
 window.addEventListener('keydown', function(e) {
   if (e.key === 'F2') {
@@ -603,16 +587,16 @@ function updateMonthTabsUI() {
     const m = tab.getAttribute('data-month');
     const badge = tab.querySelector('span:nth-child(2)');
     if (m === currentMonth) {
-      tab.className = 'month-tab px-space-md py-2 rounded-lg font-label-lg text-label-lg bg-primary text-on-primary font-bold shadow-sm whitespace-nowrap flex items-center gap-2 flex-shrink-0';
+      tab.className = 'month-tab px-[0.75rem] py-2 rounded-[0.25rem]  text-[13px] leading-[16px] tracking-[0.01em] bg-[#000000] text-[#ffffff] font-bold shadow-sm whitespace-nowrap flex items-center gap-2 flex-shrink-0';
       if (badge) {
-        badge.className = 'px-1.5 py-0.5 rounded bg-surface-container-lowest/20 text-surface font-label-md text-label-md';
+        badge.className = 'px-1.5 py-0.5 rounded bg-[#ffffff]/20 text-[#f8f9ff]  text-[11px] leading-[14px] tracking-[0.04em] font-bold';
         const total = (TRANSACTIONS_DATA[m] || []).length;
         badge.textContent = `${total} Nota • Aktif`;
       }
     } else {
-      tab.className = 'month-tab px-space-md py-2 rounded-lg font-label-lg text-label-lg text-outline hover:text-on-surface hover:bg-surface-container-low transition-colors whitespace-nowrap flex items-center gap-2 flex-shrink-0';
+      tab.className = 'month-tab px-[0.75rem] py-2 rounded-[0.25rem]  text-[13px] leading-[16px] tracking-[0.01em] font-semibold text-[#76777d] hover:text-[#0b1c30] hover:bg-[#eff4ff] transition-colors whitespace-nowrap flex items-center gap-2 flex-shrink-0';
       if (badge) {
-        badge.className = 'px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-md text-label-md';
+        badge.className = 'px-1.5 py-0.5 rounded bg-[#dce9ff] text-[#45464d]  text-[11px] leading-[14px] tracking-[0.04em] font-bold';
         const total = (TRANSACTIONS_DATA[m] || []).length;
         badge.textContent = m === '2026-06' ? 'Berjalan' : `${total} Nota`;
       }
@@ -645,9 +629,9 @@ function updateStatusButtonsUI() {
   const btnLunas = document.getElementById('filterBtnLunas');
   const btnDp = document.getElementById('filterBtnDp');
 
-  const baseInactive = 'status-chip px-3 py-1.5 rounded-md font-label-md text-label-md text-outline hover:text-on-surface transition-all whitespace-nowrap';
-  const baseActive = 'status-chip px-3 py-1.5 rounded-md font-label-md text-label-md bg-surface-container-lowest text-on-surface font-bold shadow-sm transition-all whitespace-nowrap';
-  const baseDpInactive = 'status-chip px-3 py-1.5 rounded-md font-label-md text-label-md text-secondary hover:text-on-surface transition-all whitespace-nowrap';
+  const baseInactive = 'status-chip px-3 py-1.5 rounded-md  text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d] hover:text-[#0b1c30] transition-all whitespace-nowrap';
+  const baseActive = 'status-chip px-3 py-1.5 rounded-md  text-[11px] leading-[14px] tracking-[0.04em] bg-[#ffffff] text-[#0b1c30] font-bold shadow-sm transition-all whitespace-nowrap';
+  const baseDpInactive = 'status-chip px-3 py-1.5 rounded-md  text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#a73a00] hover:text-[#0b1c30] transition-all whitespace-nowrap';
 
   btnAll.className = currentStatusFilter === 'ALL' ? baseActive : baseInactive;
   btnLunas.className = currentStatusFilter === 'LUNAS' ? baseActive : baseInactive;
@@ -776,11 +760,11 @@ function applyFiltersAndRender() {
     if (pageItems.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" class="py-12 px-4 text-center text-outline">
+          <td colspan="6" class="py-12 px-4 text-center text-[#76777d]">
             <div class="flex flex-col items-center justify-center gap-2">
-              <span class="material-symbols-outlined text-4xl text-outline-variant">search_off</span>
-              <p class="font-title-md text-on-surface">Tidak ada nota transaksi yang sesuai</p>
-              <p class="text-sm text-outline">Coba atur kata kunci pencarian atau ubah filter status/bulan.</p>
+              <span class="material-symbols-outlined text-4xl text-[#c6c6cd]">search_off</span>
+              <p class="text-[#0b1c30]">Tidak ada nota transaksi yang sesuai</p>
+              <p class="text-sm text-[#76777d]">Coba atur kata kunci pencarian atau ubah filter status/bulan.</p>
             </div>
           </td>
         </tr>
@@ -789,29 +773,29 @@ function applyFiltersAndRender() {
       tbody.innerHTML = pageItems.map((tx, idx) => {
         const rowNumber = startIndex + idx + 1;
         const isOdd = idx % 2 === 1;
-        const rowBg = isOdd ? 'bg-surface-container-low/20' : 'bg-surface-container-lowest';
+        const rowBg = isOdd ? 'bg-[#eff4ff]/20' : 'bg-[#ffffff]';
         const formattedDate = formatDateDisplay(tx.date, tx.time);
         
         const statusBadge = tx.status === 'LUNAS' 
-          ? `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface font-label-md text-label-md font-bold uppercase tracking-wider"><span class="material-symbols-outlined text-[13px] text-on-surface">check_circle</span>LUNAS</span>`
-          : `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-md text-label-md font-bold uppercase tracking-wider"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>DP / Tempo</span>`;
+          ? `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#e5eeff] text-[#0b1c30] text-[11px] leading-[14px] font-bold uppercase tracking-wider"><span class="material-symbols-outlined text-[13px] text-[#0b1c30]">check_circle</span>LUNAS</span>`
+          : `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ffdbce] text-[#370e00] text-[11px] leading-[14px] font-bold uppercase tracking-wider"><span class="w-1.5 h-1.5 rounded-full bg-[#a73a00]"></span>DP / Tempo</span>`;
 
         return `
-          <tr class="hover:bg-surface-container-low/60 transition-colors ${rowBg} border-b border-outline-variant/30"
+          <tr class="hover:bg-[#eff4ff]/60 transition-colors ${rowBg} border-b border-[#c6c6cd]/30"
               data-receipt="${tx.id}" data-customer="${tx.customer}" data-status="${tx.status}" data-total="${formatRp(tx.total)}">
-            <td class="py-3 px-4 text-center text-outline font-tabular-numeric">${rowNumber}</td>
-            <td class="py-3 px-4 font-tabular-numeric">
-              <div class="font-bold text-on-surface">${tx.id}</div>
-              <div class="font-label-md text-label-md text-outline">${formattedDate}</div>
+            <td class="py-3 px-4 text-center text-[#76777d]">${rowNumber}</td>
+            <td class="py-3 px-4">
+              <div class="font-bold text-[#0b1c30]">${tx.id}</div>
+              <div class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d]">${formattedDate}</div>
             </td>
             <td class="py-3 px-4">
-              <div class="font-semibold text-on-surface">${tx.customer}</div>
-              <div class="font-label-md text-label-md text-outline">${tx.project || '-'}</div>
+              <div class="font-semibold text-[#0b1c30]">${tx.customer}</div>
+              <div class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d]">${tx.project || '-'}</div>
             </td>
-            <td class="py-3 px-4 text-right font-tabular-numeric font-bold text-on-surface text-[16px]">${formatRp(tx.total)}</td>
+            <td class="py-3 px-4 text-right font-bold text-[#0b1c30] text-[16px]">${formatRp(tx.total)}</td>
             <td class="py-3 px-4 text-center">${statusBadge}</td>
             <td class="py-3 px-4 text-center">
-              <button class="h-8 px-3 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-md text-label-md font-semibold inline-flex items-center gap-1 transition-colors" onclick="openReceiptModal('${tx.id}')">
+              <button class="h-8 px-3 rounded-[0.25rem] bg-[#dce9ff] hover:bg-[#d3e4fe] text-[#0b1c30] text-[11px] leading-[14px] tracking-[0.04em] font-semibold inline-flex items-center gap-1 transition-colors" onclick="openReceiptModal('${tx.id}')">
                 <span class="material-symbols-outlined text-[16px]">visibility</span>
                 <span>Detail</span>
               </button>
@@ -867,13 +851,13 @@ function renderPagination(totalItems, totalPages) {
   const monthLabel = MONTH_NAMES[currentMonth] || currentMonth;
 
   if (infoEl) {
-    infoEl.innerHTML = `Menampilkan <span class="font-bold text-on-surface font-tabular-numeric">${startShow} - ${endShow}</span> dari <span class="font-bold text-on-surface font-tabular-numeric">${totalItems}</span> nota transaksi bulan ${monthLabel}`;
+    infoEl.innerHTML = `Menampilkan <span class="font-bold text-[#0b1c30]">${startShow} - ${endShow}</span> dari <span class="font-bold text-[#0b1c30]">${totalItems}</span> nota transaksi bulan ${monthLabel}`;
   }
 
   if (!btnsEl) return;
 
   let html = `
-    <button class="h-9 px-3 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container-low transition-colors disabled:opacity-40" 
+    <button class="h-9 px-3 rounded-[0.25rem] text-[#76777d] hover:text-[#0b1c30] hover:bg-[#eff4ff] transition-colors disabled:opacity-40" 
             onclick="changePage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>
       <span class="material-symbols-outlined text-[18px]">chevron_left</span>
     </button>
@@ -882,18 +866,18 @@ function renderPagination(totalItems, totalPages) {
   // Dynamic Pagination items
   for (let p = 1; p <= totalPages; p++) {
     if (totalPages > 6 && p > 3 && p < totalPages) {
-      if (p === 4) html += `<span class="px-1 text-outline">...</span>`;
+      if (p === 4) html += `<span class="px-1 text-[#76777d]">...</span>`;
       continue;
     }
     const isActive = p === currentPage;
     const cls = isActive
-      ? 'h-9 w-9 rounded-lg bg-primary text-on-primary font-bold shadow-sm'
-      : 'h-9 w-9 rounded-lg text-on-surface hover:bg-surface-container-low transition-colors';
+      ? 'h-9 w-9 rounded-[0.25rem] bg-[#000000] text-[#ffffff] font-bold shadow-sm'
+      : 'h-9 w-9 rounded-[0.25rem] text-[#0b1c30] hover:bg-[#eff4ff] transition-colors';
     html += `<button class="${cls}" onclick="changePage(${p})">${p}</button>`;
   }
 
   html += `
-    <button class="h-9 px-3 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container-low transition-colors disabled:opacity-40" 
+    <button class="h-9 px-3 rounded-[0.25rem] text-[#76777d] hover:text-[#0b1c30] hover:bg-[#eff4ff] transition-colors disabled:opacity-40" 
             onclick="changePage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}>
       <span class="material-symbols-outlined text-[18px]">chevron_right</span>
     </button>
@@ -932,10 +916,10 @@ function openReceiptModal(notaId) {
   if (badge) {
     if (tx.status === 'LUNAS') {
       badge.textContent = 'Lunas';
-      badge.className = 'px-2 py-0.5 rounded bg-surface-container text-on-surface font-label-md text-label-md font-bold uppercase';
+      badge.className = 'px-2 py-0.5 rounded bg-[#e5eeff] text-[#0b1c30]  text-[11px] leading-[14px] tracking-[0.04em] font-bold uppercase';
     } else {
       badge.textContent = 'DP / Tempo';
-      badge.className = 'px-2 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed font-label-md text-label-md font-bold uppercase';
+      badge.className = 'px-2 py-0.5 rounded bg-[#ffdbce] text-[#370e00]  text-[11px] leading-[14px] tracking-[0.04em] font-bold uppercase';
     }
   }
 
@@ -957,16 +941,16 @@ function openReceiptModal(notaId) {
   const itemsTbody = document.getElementById('modalItemsTableBody');
   if (itemsTbody) {
     itemsTbody.innerHTML = tx.items.map((item, idx) => {
-      const bg = idx % 2 === 0 ? 'bg-surface-container-lowest' : 'bg-surface-container-low/30';
+      const bg = idx % 2 === 0 ? 'bg-[#ffffff]' : 'bg-[#eff4ff]/30';
       return `
         <tr class="${bg}">
           <td class="py-2.5 px-3">
-            <div class="font-title-md text-title-md text-on-surface">${item.name}</div>
-            <div class="font-label-md text-label-md text-outline">SKU: ${item.sku} • ${item.unit}</div>
+            <div class="text-[15px] leading-[20px] font-semibold text-[#0b1c30]">${item.name}</div>
+            <div class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d]">SKU: ${item.sku} • ${item.unit}</div>
           </td>
-          <td class="py-2.5 px-3 text-center font-tabular-numeric font-bold">${item.qty} ${item.unit}</td>
-          <td class="py-2.5 px-3 text-right font-tabular-numeric text-outline">${formatRp(item.price)}</td>
-          <td class="py-2.5 px-3 text-right font-tabular-numeric font-bold text-on-surface">${formatRp(item.subtotal)}</td>
+          <td class="py-2.5 px-3 text-center font-bold">${item.qty} ${item.unit}</td>
+          <td class="py-2.5 px-3 text-right text-[#76777d]">${formatRp(item.price)}</td>
+          <td class="py-2.5 px-3 text-right font-bold text-[#0b1c30]">${formatRp(item.subtotal)}</td>
         </tr>
       `;
     }).join('');
@@ -1139,4 +1123,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Fungsi dipanggil dari atribut onclick/oninput di HTML, jadi harus global
-Object.assign(window, { formatRp, toggleSidebar, focusSearchInput, switchMonthTab, handleMonthSelectChange, navigateMonth, updateMonthTabsUI, setStatusFilter, updateStatusButtonsUI, handleSearchInput, clearSearch, handleDateRangeFilter, handlePageSizeChange, isDateInRange, getFilteredData, updateFilterCounts, applyFiltersAndRender, formatDateDisplay, renderFooterSummary, renderPagination, changePage, openReceiptModal, closeReceiptModal, handleModalBackdropClick, settleCurrentModalPayment, printSingleReceipt, handleExport, openMonthlyReportModal, closeMonthlyReportModal });
+Object.assign(window, { formatRp, switchMonthTab, handleMonthSelectChange, navigateMonth, updateMonthTabsUI, setStatusFilter, updateStatusButtonsUI, handleSearchInput, clearSearch, handleDateRangeFilter, handlePageSizeChange, isDateInRange, getFilteredData, updateFilterCounts, applyFiltersAndRender, formatDateDisplay, renderFooterSummary, renderPagination, changePage, openReceiptModal, closeReceiptModal, handleModalBackdropClick, settleCurrentModalPayment, printSingleReceipt, handleExport, openMonthlyReportModal, closeMonthlyReportModal });
