@@ -1,10 +1,12 @@
 <?php
 
-use App\Http\Controllers\KasirController;
-use App\Http\Controllers\LoginController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\KasirController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\NotaController;
 
 // Halaman awal diarahkan ke login.
 Route::get('/', fn () => redirect()->route('login'));
@@ -56,6 +58,11 @@ Route::middleware('auth')->group(function () {
             Route::post('/keranjang/custom', [KasirController::class, 'tambahCustom'])->name('keranjang.custom');
             Route::patch('/keranjang/{id}', [KasirController::class, 'ubah'])->name('keranjang.ubah');
             Route::delete('/keranjang/{id}', [KasirController::class, 'hapus'])->name('keranjang.hapus');
+
+            Route::get('/nota', [NotaController::class, 'index'])->name('nota.index');
+            Route::post('/nota', [NotaController::class, 'store'])->name('nota.store');
+            Route::get('/nota/{id}', [NotaController::class, 'show'])->name('nota.show')->whereNumber('id');
+            Route::post('/nota/{id}/lunasi', [NotaController::class, 'lunasi'])->name('nota.lunasi')->whereNumber('id');
 
             Route::view('/riwayat', 'kasir.riwayat')->name('riwayat');
             Route::view('/pembayaran', 'kasir.pembayaran')->name('pembayaran');
