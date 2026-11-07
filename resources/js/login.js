@@ -1,19 +1,21 @@
-// Logika halaman Login
-function togglePinVisibility() {
-  const pinInput = document.getElementById('pin-input');
-  const eyeIcon = document.getElementById('eye-icon');
-  const eyeText = document.getElementById('eye-text');
-  const hidden = pinInput.type === 'password';
-  pinInput.type = hidden ? 'text' : 'password';
-  eyeIcon.textContent = hidden ? 'visibility_off' : 'visibility';
-  eyeText.textContent = hidden ? 'Tutup' : 'Lihat';
-}
 
-function quickPinAction() {
-  const pinInput = document.getElementById('pin-input');
-  pinInput.classList.add('bg-amber-100');
-  setTimeout(() => pinInput.classList.remove('bg-amber-100'), 350);
-}
+window.togglePinVisibility = function () {
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eye-icon');
+    const eyeText = document.getElementById('eye-text');
 
-// Dipanggil dari atribut onclick di Blade, jadi harus global
-Object.assign(window, { togglePinVisibility, quickPinAction });
+    if (!passwordInput) {
+        console.error('Input password tidak ditemukan!');
+        return;
+    }
+
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.textContent = 'visibility_off';
+        eyeText.textContent = 'Tutup';
+    } else {
+        passwordInput.type = 'password';
+        eyeIcon.textContent = 'visibility';
+        eyeText.textContent = 'Lihat';
+    }
+};

@@ -1,4 +1,4 @@
-```blade
+
 {{-- Navbar kasir: dipakai halaman kasir, riwayat, dan pembayaran.
      Ubah di file ini, semua halaman ikut berubah. --}}
 
@@ -9,15 +9,17 @@
         {{-- Kiri: logo + nama toko --}}
         <div class="flex items-center gap-2 sm:gap-3 min-w-0">
 
-            <div class="w-10 h-10 shrink-0 rounded-[0.5rem] bg-[#131b2e] text-amber-400 flex items-center justify-center shadow-sm overflow-hidden">
 
-                <img
-                    src="{{ asset('images/ud.tentrem.png') }}"
-                    alt="UD Tentrem"
-                    class="w-full h-full object-contain"
-                >
+<div class="w-10 h-10 shrink-0 rounded-[0.5rem] bg-transparent flex items-center justify-center overflow-hidden">
 
-            </div>
+    <img
+        src="{{ asset('images/ud.tentrem1.png') }}"
+        alt="UD Tentrem"
+        class="w-full h-full object-contain"
+    >
+
+</div>
+
 
             <span class="font-bold text-sm min-[400px]:text-base text-[#0b1c30] leading-tight tracking-tight truncate">
                 UD.Tentrem
@@ -89,4 +91,3 @@
     aria-hidden="true"
     class="h-[calc(4rem+env(safe-area-inset-top,0px))] shrink-0"
 ></div>
-```

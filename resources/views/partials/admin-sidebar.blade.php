@@ -4,7 +4,15 @@
   <div class="flex flex-col">
     <div class="h-16 px-[1.25rem] flex items-center justify-between border-b border-[#000000]/20">
       <div class="flex items-center gap-[0.75rem]">
-        <div class="w-9 h-9 rounded bg-[#a73a00] flex items-center justify-center text-[#ffffff] font-bold">AM</div>
+<div class="w-10 h-10 shrink-0 rounded-[0.5rem] bg-transparent flex items-center justify-center overflow-hidden">
+
+    <img
+        src="{{ asset('images/ud.tentrem1.png') }}"
+        alt="UD Tentrem"
+        class="w-full h-full object-contain"
+    >
+
+</div>
         <div class="flex flex-col">
           <span class="text-[15px] font-semibold text-[#f8f9ff] tracking-tight leading-none">UD.Tentrem</span>
           <span class="text-[11px] leading-[14px] font-bold text-[#7c839b] uppercase tracking-wider mt-0.5">Toko Bangunan</span>
@@ -43,5 +51,27 @@
       </a>
     </nav>
   </div>
-  <div class="p-[0.75rem] border-t border-[#000000]/20"></div>
+
+<div class="p-[0.75rem] border-t border-[#000000]/20">
+
+    <form action="{{ route('logout') }}" method="POST">
+        @csrf
+
+        <button
+            type="submit"
+            class="w-full flex items-center gap-[0.75rem] px-[0.75rem] py-[0.65rem] rounded-[0.25rem] text-[#f87171] hover:bg-[#7f1d1d]/30 hover:text-[#fca5a5] transition-colors"
+        >
+            <span class="material-symbols-outlined text-[20px]">
+                logout
+            </span>
+
+            <span class="text-[15px] leading-[20px] font-semibold">
+                Logout
+            </span>
+        </button>
+
+    </form>
+
+</div>
+
 </aside>
