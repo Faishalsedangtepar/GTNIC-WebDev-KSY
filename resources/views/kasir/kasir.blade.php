@@ -30,7 +30,7 @@
 
 
 <!-- ================= MAIN ================= -->
-<main class="flex-1 flex flex-col relative w-full bg-surface">
+<main class="flex-1 flex flex-col relative w-full bg-surface pt-16">
 
   <!-- Area katalog: di layar lebar diberi ruang kanan untuk sidebar nota -->
   <div class="flex flex-col w-full pb-36 md:pb-6 md:pr-80 lg:pr-96">
