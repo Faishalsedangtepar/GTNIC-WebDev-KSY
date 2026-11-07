@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 
   @vite(['resources/css/app.css', 'resources/js/pembayaran.js'])
 
@@ -31,14 +32,28 @@
 <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 <!-- Title Page -->
 <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-<div>
-<a href="#kasir-pos" onclick="history.back(); return false;" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white border border-slate-300 hover:border-slate-400 text-sm font-semibold text-slate-800 hover:text-slate-900 hover:bg-slate-50 shadow-xs transition-all mb-3 group"><svg class="w-5 h-5 text-slate-600 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><span class="">Kembali ke Kasir / Pesanan</span></a><h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Checkout Pembayaran Kasir</h1>
-<p class="text-sm text-slate-500 mt-1">Selesaikan pemesanan, verifikasi armada logistik, dan cetak nota kasir resmi.</p>
+
+<div class="fixed inset-x-0 z-30 top-[calc(4rem+env(safe-area-inset-top,0px))] bg-[#f8f9ff]/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+  <div class="h-16 px-gutter flex items-center justify-between">
+      <div class="flex items-center gap-space-sm min-w-0">
+@include('partials.back-button', ['class' => 'mb-3'])
+ <h1 class="font-title-lg text-title-lg text-on-surface truncate"></h1>
+      </div>
+
+      <div class="flex items-center gap-space-xs">
+        <button 
+          type="button" 
+          aria-label="Filter Kalender" 
+          class="w-11 h-11 flex items-center justify-center text-on-surface-variant hover:text-on-surface active:scale-95 transition-all"
+        >
+          <span class="material-symbols-outlined text-[22px]">calendar_today</span>
+        </button>
+      </div>
+    </div>
 </div>
-<div class="text-xs font-semibold text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-2xs self-start sm:self-auto">
-        No. Dokumen: <span class="text-slate-800 font-mono font-bold">Dibuat otomatis saat disimpan</span>
+<h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Checkout Pembayaran Kasir</h1>
 </div>
-</div>
+
 <!-- Main Grid Layout -->
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 <!-- BEGIN: LeftColumn (Alamat & Pesanan Material) -->

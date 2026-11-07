@@ -54,16 +54,9 @@
 <!-- Baris judul halaman (milik halaman ini): menempel tepat di bawah navbar -->
 <div class="fixed inset-x-0 z-30 top-[calc(4rem+env(safe-area-inset-top,0px))] bg-[#f8f9ff]/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
   <div class="h-16 px-gutter flex items-center justify-between">
-      <div class="flex items-center gap-space-sm">
-        <button 
-          type="button" 
-          aria-label="Kembali" 
-          class="w-11 h-11 flex items-center justify-center text-on-surface hover:text-secondary active:scale-95 transition-all" 
-          onclick="history.back()"
-        >
-          <span class="material-symbols-outlined text-[24px]">arrow_back</span>
-        </button>
-        <h1 class="font-title-lg text-title-lg text-on-surface truncate">Riwayat Nota Penjualan Hari Ini</h1>
+      <div class="flex items-center gap-space-sm min-w-0">
+        @include('partials.back-button')
+        <h1 class="font-title-lg text-title-lg text-on-surface truncate"></h1>
       </div>
 
       <div class="flex items-center gap-space-xs">

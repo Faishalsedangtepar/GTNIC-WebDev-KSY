@@ -6,8 +6,8 @@
       <div class="flex items-center gap-[0.75rem]">
         <div class="w-9 h-9 rounded bg-[#a73a00] flex items-center justify-center text-[#ffffff] font-bold">AM</div>
         <div class="flex flex-col">
-          <span class="text-[15px] font-semibold text-[#f8f9ff] tracking-tight leading-none">Aura Material</span>
-          <span class="text-[11px] leading-[14px] font-bold text-[#7c839b] uppercase tracking-wider mt-0.5">Depot ERP &amp; POS</span>
+          <span class="text-[15px] font-semibold text-[#f8f9ff] tracking-tight leading-none">UD.Tentrem</span>
+          <span class="text-[11px] leading-[14px] font-bold text-[#7c839b] uppercase tracking-wider mt-0.5">Toko Bangunan</span>
         </div>
       </div>
       <button type="button" aria-label="Tutup menu" onclick="closeSidebar()"
