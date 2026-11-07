@@ -137,6 +137,17 @@ class KasirController extends Controller
         return response()->json($this->keranjangPayload($kasirId));
     }
 
+    // DELETE /kasir/keranjang : kosongkan seluruh keranjang kasir yang login
+    public function kosongkan(Request $request): JsonResponse
+    {
+        $kasirId = $request->user()->id;
+
+        KeranjangItem::where('kasir_id', $kasirId)->delete();
+
+        return response()->json($this->keranjangPayload($kasirId));
+    }
+        
+
     // ---------------------------------------------------------------- helper
 
     private function produkList(Request $request)

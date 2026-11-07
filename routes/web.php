@@ -58,6 +58,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/keranjang/custom', [KasirController::class, 'tambahCustom'])->name('keranjang.custom');
             Route::patch('/keranjang/{id}', [KasirController::class, 'ubah'])->name('keranjang.ubah');
             Route::delete('/keranjang/{id}', [KasirController::class, 'hapus'])->name('keranjang.hapus');
+            Route::delete('keranjang', [KasirController::class, 'kosongkan']);
 
             Route::get('/nota', [NotaController::class, 'index'])->name('nota.index');
             Route::post('/nota', [NotaController::class, 'store'])->name('nota.store');

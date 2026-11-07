@@ -275,7 +275,7 @@
   </svg>
   <span id="btn-submit-kasir-text" class="text-sm tracking-wide">Bayar DP &amp; Cetak Nota DO</span>
 </button>
-<button onclick="history.back()" type="button" class="w-full bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-600 font-bold py-2.5 px-4 rounded-xl border border-slate-200 hover:border-slate-300 transition-all flex items-center justify-center gap-2 text-xs active:scale-[0.99]">
+<button id="btn-batal-kasir" data-url-batal="{{ url('/kasir/keranjang') }}" data-url-kasir="{{ url('/kasir/dashboard') }}" type="button" class="w-full bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-600 font-bold py-2.5 px-4 rounded-xl border border-slate-200 hover:border-slate-300 transition-all flex items-center justify-center gap-2 text-xs active:scale-[0.99]">
   <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
   <span class="">Batalkan Transaksi</span>
 </button>

@@ -310,8 +310,42 @@ function onSukses(nota) {
   btn.disabled = false;
   btn.classList.remove('opacity-50', 'cursor-not-allowed');
   $('btn-submit-kasir-text').textContent = 'Selesai - Transaksi Baru';
+  if ($('btn-batal-kasir')) $('btn-batal-kasir').classList.add('hidden');
 
   cetakNota(nota.id);
+}
+
+// ---------------------------------------------------------------- batalkan transaksi
+async function batalkanTransaksi() {
+  if (isSubmitting || sudahSelesai) return;
+  if (!window.confirm('Batalkan transaksi? Semua item di nota akan dihapus dari keranjang.')) return;
+
+  var btn = $('btn-batal-kasir');
+  var tokenEl = document.querySelector('meta[name="csrf-token"]');
+  clearAlert();
+  btn.disabled = true;
+
+  try {
+    var res = await fetch(btn.dataset.urlBatal, {
+      method: 'DELETE',
+      credentials: 'same-origin',
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-TOKEN': tokenEl ? tokenEl.content : ''
+      }
+    });
+    if (!res.ok) {
+      var json = await res.json().catch(function () { return {}; });
+      showAlert('error', pesanDariResponse(res.status, json));
+      btn.disabled = false;
+      return;
+    }
+    window.location.href = btn.dataset.urlKasir;   // keranjang sudah kosong, kembali ke kasir
+  } catch (e) {
+    showAlert('error', 'Tidak bisa terhubung ke server. Periksa koneksi lalu coba lagi.');
+    btn.disabled = false;
+  }
 }
 
 // ---------------------------------------------------------------- cetak nota
@@ -434,6 +468,7 @@ function initPembayaran() {
   if (toggle && catatan) toggle.addEventListener('click', function () { catatan.classList.toggle('hidden'); catatan.focus(); });
 
   $('btn-submit-kasir').addEventListener('click', submitKasir);
+  if ($('btn-batal-kasir')) $('btn-batal-kasir').addEventListener('click', batalkanTransaksi);
 
   selectPaymentMethod('dp');   // render awal dari state, bukan angka hardcode di HTML
 }
