@@ -1,45 +1,7 @@
 // Logika halaman Data Stok Barang
-  function toggleMobileSidebar() {
-    const sidebar = document.getElementById('sidebarDrawer');
-    const backdrop = document.getElementById('sidebarBackdrop');
-    
-    if (sidebar.classList.contains('-translate-x-full')) {
-      sidebar.classList.remove('-translate-x-full');
-      backdrop.classList.remove('hidden');
-    } else {
-      sidebar.classList.add('-translate-x-full');
-      backdrop.classList.add('hidden');
-    }
-  }
+  
 
-  function selectSidebarItem(e, targetPath) {
-    if (e) e.preventDefault();
-    const items = document.querySelectorAll('.sidebar-item');
-    items.forEach(item => {
-      const path = item.getAttribute('data-path');
-      const textSpan = item.querySelector('span:not(.material-symbols-outlined)');
-      if (path === targetPath) {
-        item.className = 'sidebar-item flex items-center gap-space-md px-3 py-2.5 rounded-lg bg-secondary-container text-white font-bold shadow-sm transition-all';
-        item.setAttribute('aria-current', 'page');
-        if (textSpan) {
-          textSpan.className = 'font-title-md text-title-md';
-        }
-      } else {
-        item.className = 'sidebar-item flex items-center gap-space-md px-3 py-2.5 rounded-lg text-on-primary-container hover:bg-white/10 hover:text-white transition-all font-body-md text-body-md';
-        item.removeAttribute('aria-current');
-        if (textSpan) {
-          textSpan.className = '';
-        }
-      }
-    });
-
-    if (window.innerWidth < 1024) {
-      const sidebar = document.getElementById('sidebarDrawer');
-      if (sidebar && !sidebar.classList.contains('-translate-x-full')) {
-        toggleMobileSidebar();
-      }
-    }
-  }
+  
 
   function openModal(type, data = null) {
     if (type === 'add') {
@@ -89,10 +51,6 @@
       closeModal('edit');
       closeModal('adjust');
       closeModal('delete');
-      const sidebar = document.getElementById('sidebarDrawer');
-      if (!sidebar.classList.contains('-translate-x-full') && window.innerWidth < 1024) {
-        toggleMobileSidebar();
-      }
     }
   });
 
@@ -122,17 +80,17 @@
     pageButtons.forEach(btn => {
       const p = parseInt(btn.getAttribute('data-page'));
       if (p === currentPage) {
-        btn.className = 'page-btn w-8 h-8 rounded-lg bg-primary text-white font-bold text-xs flex items-center justify-center shadow-sm transition-all';
+        btn.className = 'page-btn w-8 h-8 rounded-[0.375rem] bg-primary-container text-on-primary font-bold text-xs flex items-center justify-center shadow-sm transition-all';
       } else {
-        btn.className = 'page-btn w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-700 font-medium text-xs flex items-center justify-center transition-colors';
+        btn.className = 'page-btn w-8 h-8 rounded-[0.375rem] hover:bg-surface-container text-on-surface font-medium text-xs flex items-center justify-center transition-colors';
       }
     });
   }
 
 // ===== Filter kategori & pencarian (di desain asli dipanggil tapi belum ditulis) =====
 let activeCategory = 'Semua';
-const CHIP_ACTIVE = 'category-tab px-3.5 py-1.5 rounded-lg bg-primary text-white font-semibold text-xs shrink-0 shadow-sm transition-transform active:scale-95 cursor-pointer';
-const CHIP_IDLE = 'category-tab px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs shrink-0 transition-colors cursor-pointer';
+const CHIP_ACTIVE = 'category-tab px-3.5 py-1.5 rounded-[0.375rem] bg-primary-container text-on-primary font-semibold text-xs shrink-0 shadow-sm transition-transform active:scale-95 cursor-pointer';
+const CHIP_IDLE = 'category-tab px-3.5 py-1.5 rounded-[0.375rem] bg-surface-container hover:bg-surface-container-high text-on-surface font-medium text-xs shrink-0 transition-colors cursor-pointer';
 
 function filterByCategory(category) {
   activeCategory = category;
@@ -162,4 +120,4 @@ function applyInventoryFilter() {
 
 
 // Fungsi dipanggil dari atribut onclick/oninput di HTML, jadi harus global
-Object.assign(window, { toggleMobileSidebar, selectSidebarItem, openModal, closeModal, confirmDeleteAction, goToPage, filterByCategory, applyInventoryFilter });
+Object.assign(window, { openModal, closeModal, confirmDeleteAction, goToPage, filterByCategory, applyInventoryFilter });

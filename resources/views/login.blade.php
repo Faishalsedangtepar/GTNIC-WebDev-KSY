@@ -141,66 +141,56 @@ body {
                     </div>
 
 
-                    <!-- PASSWORD / PIN -->
+<!-- PASSWORD / PIN -->
 
-                    <div class="flex flex-col gap-2">
+<div class="flex flex-col gap-2">
 
-                        <div class="flex items-center justify-between gap-2">
-
-                            <label
-                                class="text-sm font-bold text-on-surface"
-                                for="password"
-                            >
-                                PIN Keamanan Toko / Sandi
-                            </label>
-
-<button
-    class="text-xs font-semibold text-secondary hover:text-on-secondary-container flex items-center gap-1 transition-colors"
-    id="toggle-pin"
-    type="button"
-    onclick="window.togglePinVisibility()"
->
-    <span class="material-symbols-outlined text-base" id="eye-icon">
-        visibility
-    </span>
-
-    <span id="eye-text">Lihat</span>
-</button>
-
-                        </div>
+    <label
+        class="text-sm font-bold text-on-surface"
+        for="password"
+    >
+        PIN Keamanan Toko / Sandi
+    </label>
 
 
-                        <div class="relative flex items-center">
+    <div class="relative flex items-center">
 
-                            <span class="material-symbols-outlined absolute left-3.5 text-on-surface-variant text-xl pointer-events-none">
-                                lock
-                            </span>
+        <span class="material-symbols-outlined absolute left-3.5 text-on-surface-variant text-xl pointer-events-none">
+            lock
+        </span>
 
-                            <input
-                                class="w-full h-14 pl-11 pr-24 rounded-lg bg-surface-container-low text-on-surface text-sm tracking-[0.15em] outline-none border border-outline-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all placeholder:text-on-surface-variant/60"
-                                id="password"
-                                name="password"
-                                autocomplete="current-password"
-                                placeholder="Masukkan PIN / Password"
-                                type="password"
-                                required
-                            >
+        <input
+            class="w-full h-14 pl-11 pr-24 rounded-lg bg-surface-container-low text-on-surface text-sm tracking-[0.15em] outline-none border border-outline-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all placeholder:text-on-surface-variant/60"
+            id="password"
+            name="password"
+            autocomplete="current-password"
+            placeholder="Masukkan PIN / Password"
+            type="password"
+            required
+        >
 
-                            <div class="absolute right-3 flex items-center pointer-events-none">
+        <!-- Tombol lihat / tutup PIN (menggantikan tulisan PASSWORD) -->
+        <button
+            class="absolute right-3 flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold text-secondary hover:text-on-secondary-container hover:bg-surface-container transition-colors"
+            id="toggle-pin"
+            type="button"
+            aria-label="Tampilkan atau sembunyikan PIN"
+            onclick="window.togglePinVisibility()"
+        >
+            <span class="material-symbols-outlined text-base" id="eye-icon">
+                visibility
+            </span>
 
-                                <span class="text-[10px] tracking-wider px-2 py-1 rounded bg-surface-container text-on-surface-variant font-bold">
-                                    PASSWORD
-                                </span>
+            <span id="eye-text">Lihat</span>
+        </button>
 
-                            </div>
+    </div>
 
-                        </div>
+    @error('password')
+        <p class="text-sm text-error">{{ $message }}</p>
+    @enderror
 
-                        @error('password')
-                            <p class="text-sm text-error">{{ $message }}</p>
-                        @enderror
-
-                    </div>
+</div>
 
 
                     <!-- TOMBOL MASUK -->
@@ -280,6 +270,44 @@ body {
             <p class="text-white/70 text-xs sm:text-sm mt-5 tracking-wide">
                 Sistem Manajemen Toko Bangunan
             </p>
+
+<!-- INFORMASI MODUL SISTEM -->
+<ul class="mt-10 justify-center" style="display:grid;grid-template-columns:repeat(2,max-content);gap:1rem 2rem;">
+
+    <li class="flex items-center text-left" style="gap:.625rem;">
+        <span class="flex items-center justify-center shrink-0"
+              style="width:1.75rem;height:1.75rem;border-radius:.375rem;background:rgba(253,101,30,.12);border:1px solid rgba(253,101,30,.30);color:#fd651e;">
+            <span class="material-symbols-outlined" style="font-size:16px;">point_of_sale</span>
+        </span>
+        <span class="text-sm font-medium" style="color:rgba(255,255,255,.8);">Point of Sale</span>
+    </li>
+
+    <li class="flex items-center text-left" style="gap:.625rem;">
+        <span class="flex items-center justify-center shrink-0"
+              style="width:1.75rem;height:1.75rem;border-radius:.375rem;background:rgba(253,101,30,.12);border:1px solid rgba(253,101,30,.30);color:#fd651e;">
+            <span class="material-symbols-outlined" style="font-size:16px;">bar_chart</span>
+        </span>
+        <span class="text-sm font-medium" style="color:rgba(255,255,255,.8);">Inventory &amp; Reports</span>
+    </li>
+
+    <li class="flex items-center text-left" style="gap:.625rem;">
+        <span class="flex items-center justify-center shrink-0"
+              style="width:1.75rem;height:1.75rem;border-radius:.375rem;background:rgba(253,101,30,.12);border:1px solid rgba(253,101,30,.30);color:#fd651e;">
+            <span class="material-symbols-outlined" style="font-size:16px;">account_balance_wallet</span>
+        </span>
+        <span class="text-sm font-medium" style="color:rgba(255,255,255,.8);">Akun &amp; Keuangan</span>
+    </li>
+
+    <li class="flex items-center text-left" style="gap:.625rem;">
+        <span class="flex items-center justify-center shrink-0"
+              style="width:1.75rem;height:1.75rem;border-radius:.375rem;background:rgba(253,101,30,.12);border:1px solid rgba(253,101,30,.30);color:#fd651e;">
+            <span class="material-symbols-outlined" style="font-size:16px;">receipt_long</span>
+        </span>
+        <span class="text-sm font-medium" style="color:rgba(255,255,255,.8);">Riwayat Nota</span>
+    </li>
+
+</ul>
+            
 
         </div>
 
