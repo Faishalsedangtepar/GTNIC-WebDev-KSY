@@ -8,8 +8,14 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" 
+    rel="stylesheet"
+  >
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" 
+    rel="stylesheet"
+  >
 
   @vite(['resources/css/app.css', 'resources/js/riwayat.js'])
 
@@ -41,7 +47,10 @@
   </style>
 </head>
 
-<body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen">
+<body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"
+  data-base="{{ url('/kasir') }}"
+  data-kasir="{{ auth()->user()->username }}"
+  data-tanggal="{{ now(config('app.timezone'))->toDateString() }}">
   
   <!-- Header Sticky (Tetap di Atas) -->
   @include('partials.kasir-navbar')
@@ -49,19 +58,18 @@
 <!-- Baris judul halaman (milik halaman ini): menempel tepat di bawah navbar -->
 <div class="fixed inset-x-0 z-30 top-[calc(4rem+env(safe-area-inset-top,0px))] bg-[#f8f9ff]/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
   <div class="h-16 px-gutter flex items-center justify-between">
-      <div class="flex items-center gap-space-sm min-w-0">
-        @include('partials.back-button')
-        <h1 class="font-title-lg text-title-lg text-on-surface truncate"></h1>
-      </div>
-
+    @include('partials.back-button', ['class' => 'mb-3'])
+    
       <div class="flex items-center gap-space-xs">
         <button 
           type="button" 
+          id="btn-kalender" 
           aria-label="Filter Kalender" 
           class="w-11 h-11 flex items-center justify-center text-on-surface-variant hover:text-on-surface active:scale-95 transition-all"
         >
           <span class="material-symbols-outlined text-[22px]">calendar_today</span>
         </button>
+        <input type="date" id="input-tanggal" class="sr-only" tabindex="-1" aria-hidden="true">
       </div>
     </div>
 </div>
@@ -76,38 +84,38 @@
           <div class="flex items-center justify-between border-b border-outline-variant/20 pb-2">
             <div class="flex items-center gap-2">
               <div class="w-8 h-8 rounded-lg bg-primary-container text-on-primary flex items-center justify-center font-bold text-[13px]">
-                H
+                {{ strtoupper(substr(auth()->user()->username, 0, 1)) }}
               </div>
               <div>
                 <div class="flex items-center gap-1.5">
-                  <span class="font-title-md text-[14px] font-bold text-on-surface">Kasir Hendra</span>
+                  <span class="font-title-md text-[14px] font-bold text-on-surface">Kasir {{ ucfirst(auth()->user()->username) }}</span>
                   <span class="w-2 h-2 rounded-full bg-secondary-container"></span>
                 </div>
-                <span class="text-[11px] text-on-surface-variant">Shift Pagi • 27 Mei 2024</span>
+                <span class="text-[11px] text-on-surface-variant" id="ringkasan-tanggal">{{ now(config('app.timezone'))->locale('id')->translatedFormat('j F Y') }}</span>
               </div>
             </div>
             <div class="flex items-center gap-1 bg-surface-container px-2.5 py-1 rounded-full text-on-surface text-[11px] font-semibold">
               <span class="material-symbols-outlined text-[13px]">today</span>
-              <span>Hari Ini</span>
+              <span id="chip-hari">Hari Ini</span>
             </div>
           </div>
 
           <div class="grid grid-cols-3 gap-2">
             <div class="flex flex-col">
               <span class="text-[11px] text-on-surface-variant font-medium">Total Omzet</span>
-              <span class="font-tabular-numeric text-[15px] font-extrabold text-on-surface tracking-tight">Rp 8.450.000</span>
+              <span class="font-tabular-numeric text-[15px] font-extrabold text-on-surface tracking-tight" id="ringkasan-omzet">Rp 0</span>
             </div>
             <div class="flex flex-col border-l border-outline-variant/20 pl-2">
               <span class="text-[11px] text-on-surface-variant font-medium">Nota Lunas</span>
               <div class="flex items-baseline gap-1">
-                <span class="font-tabular-numeric text-[15px] font-bold text-emerald-600">26</span>
+                <span class="font-tabular-numeric text-[15px] font-bold text-emerald-600" id="ringkasan-lunas">0</span>
                 <span class="text-[11px] text-on-surface-variant">trx</span>
               </div>
             </div>
             <div class="flex flex-col border-l border-outline-variant/20 pl-2">
               <span class="text-[11px] text-on-surface-variant font-medium">DP</span>
               <div class="flex items-baseline gap-1">
-                <span class="font-tabular-numeric text-[15px] font-bold text-secondary">2</span>
+                <span class="font-tabular-numeric text-[15px] font-bold text-secondary" id="ringkasan-dp">0</span>
                 <span class="text-[11px] text-on-surface-variant">trx</span>
               </div>
             </div>
@@ -139,18 +147,18 @@
           <button 
             type="button" 
             data-filter="all" 
-            class="filter-pill bg-surface-container text-on-surface hover:bg-surface-container-high px-space-md py-1 rounded-full font-label-md text-label-md whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer"
+            class="filter-pill bg-primary-container text-on-primary shadow-sm px-space-md py-1 rounded-full font-label-md text-label-md whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <span>Semua</span>
-            <span class="text-[11px] opacity-75 font-semibold">28</span>
+            <span class="text-[11px] opacity-75 font-semibold" id="count-all">0</span>
           </button>
           <button 
             type="button" 
             data-filter="lunas" 
-            class="filter-pill bg-primary-container text-on-primary px-space-md py-1 rounded-full font-label-md text-label-md whitespace-nowrap shadow-sm flex items-center gap-1.5 cursor-pointer"
+            class="filter-pill bg-surface-container text-on-surface hover:bg-surface-container-high px-space-md py-1 rounded-full font-label-md text-label-md whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <span>Lunas</span>
-            <span class="text-[11px] text-on-surface-variant font-semibold">26</span>
+            <span class="text-[11px] opacity-75 font-semibold" id="count-lunas">0</span>
           </button>
           <button 
             type="button" 
@@ -159,200 +167,14 @@
           >
             <span class="w-1.5 h-1.5 rounded-full bg-secondary-container"></span>
             <span>DP</span>
-            <span class="text-[11px] text-secondary font-semibold">2</span>
+            <span class="text-[11px] text-secondary font-semibold" id="count-dp">0</span>
           </button>
         </div>
       </section>
 
       <!-- 3. Daftar Riwayat Transaksi -->
       <section class="px-gutter mt-2 flex flex-col gap-2.5" id="transaction-list">
-
-        <!-- Item Nota 1 -->
-        <article 
-          class="bg-surface-container-lowest rounded-xl p-3 shadow-sm border border-outline-variant/30 flex flex-col gap-2 transaction-item cursor-pointer hover:shadow-md transition-shadow active:scale-[0.99]" 
-          data-id="NOTA-018" 
-          data-nota="NOTA-018" 
-          data-type="lunas tunai"
-        >
-          <div class="flex items-center justify-between border-b border-outline-variant/20 pb-1.5">
-            <div class="flex items-center gap-2">
-              <span class="font-tabular-numeric text-tabular-numeric font-extrabold text-on-surface">NOTA-018</span>
-              <span class="text-on-surface-variant text-[11px] bg-surface-container px-1.5 py-0.5 rounded font-medium">14:35 WIB</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span class="text-[11px] font-bold text-on-surface px-2 py-0.5 rounded bg-surface-container">Lunas</span>
-              <span class="font-tabular-numeric text-title-md font-extrabold text-on-surface">Rp 1.730.000</span>
-            </div>
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <div class="flex items-center gap-1 text-[13px] font-semibold text-on-surface">
-              <span class="material-symbols-outlined text-[16px] text-on-surface-variant">person</span>
-              Pak Joko (Mandor Ruko Permata)
-            </div>
-            <p class="text-body-md text-on-surface-variant text-[12px] truncate pl-5">10 Semen Tiga Roda 50kg, 15 Besi Beton 10mm</p>
-          </div>
-          <div class="flex items-center justify-end gap-1.5 pt-1 border-t border-outline-variant/20">
-            <button 
-              type="button" 
-              data-nota="NOTA-018" 
-              class="btn-detail-nota h-7 px-2.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high text-label-md font-semibold flex items-center gap-1 transition-colors active:scale-95"
-            >
-              <span class="material-symbols-outlined text-[15px]">visibility</span>
-              Rincian
-            </button>
-            <button 
-              type="button" 
-              data-nota="NOTA-018" 
-              class="btn-print-card h-7 px-2.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container text-label-md font-semibold flex items-center gap-1 shadow-sm transition-colors active:scale-95"
-            >
-              <span class="material-symbols-outlined text-[15px]">print</span>
-              Cetak
-            </button>
-          </div>
-        </article>
-
-        <!-- Item Nota 2 -->
-        <article 
-          class="bg-surface-container-lowest rounded-xl p-3 shadow-sm border border-outline-variant/30 flex flex-col gap-2 transaction-item cursor-pointer hover:shadow-md transition-shadow active:scale-[0.99]" 
-          data-id="NOTA-017" 
-          data-nota="NOTA-017" 
-          data-type="lunas non-tunai"
-        >
-          <div class="flex items-center justify-between border-b border-outline-variant/20 pb-1.5">
-            <div class="flex items-center gap-2">
-              <span class="font-tabular-numeric text-tabular-numeric font-extrabold text-on-surface">NOTA-017</span>
-              <span class="text-on-surface-variant text-[11px] bg-surface-container px-1.5 py-0.5 rounded font-medium">13:10 WIB</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span class="text-[11px] font-bold text-on-surface px-2 py-0.5 rounded bg-surface-container">Lunas</span>
-              <span class="font-tabular-numeric text-title-md font-extrabold text-on-surface">Rp 384.000</span>
-            </div>
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <div class="flex items-center gap-1 text-[13px] font-semibold text-on-surface">
-              <span class="material-symbols-outlined text-[16px] text-on-surface-variant">person</span>
-              Bu Hani (Rumah Kebon Jeruk)
-            </div>
-            <p class="text-body-md text-on-surface-variant text-[12px] truncate pl-5">2 Catylac Putih 5kg, 3 Pipa PVC AW 3/4"</p>
-          </div>
-          <div class="flex items-center justify-end gap-1.5 pt-1 border-t border-outline-variant/20">
-            <button 
-              type="button" 
-              data-nota="NOTA-017" 
-              class="btn-detail-nota h-7 px-2.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high text-label-md font-semibold flex items-center gap-1 transition-colors active:scale-95"
-            >
-              <span class="material-symbols-outlined text-[15px]">visibility</span>
-              Rincian
-            </button>
-            <button 
-              type="button" 
-              data-nota="NOTA-017" 
-              class="btn-print-card h-7 px-2.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container text-label-md font-semibold flex items-center gap-1 shadow-sm transition-colors active:scale-95"
-            >
-              <span class="material-symbols-outlined text-[15px]">print</span>
-              Cetak
-            </button>
-          </div>
-        </article>
-
-        <!-- Item Nota 3 (DP) -->
-        <article 
-          class="bg-surface-container-lowest rounded-xl p-3 shadow-sm border border-secondary/30 flex flex-col gap-2 transaction-item cursor-pointer hover:shadow-md transition-shadow active:scale-[0.99]" 
-          data-id="NOTA-016" 
-          data-nota="NOTA-016" 
-          data-type="tempo non-tunai"
-        >
-          <div class="flex items-center justify-between border-b border-outline-variant/20 pb-1.5">
-            <div class="flex items-center gap-2">
-              <span class="font-tabular-numeric text-tabular-numeric font-extrabold text-on-surface">NOTA-016</span>
-              <span class="text-on-surface-variant text-[11px] bg-surface-container px-1.5 py-0.5 rounded font-medium">11:45 WIB</span>
-            </div>
-            <div class="flex items-center gap-1.5 ml-auto">
-              <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-secondary-fixed text-secondary">DP</span>
-              <span class="font-tabular-numeric text-title-md font-extrabold text-secondary">Rp 4.670.000</span>
-            </div>
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <div class="flex items-center gap-1 text-[13px] font-semibold text-on-surface">
-              <span class="material-symbols-outlined text-[16px] text-secondary">engineering</span>
-              Mandor Asep (CV Karya Mandiri)
-            </div>
-            <p class="text-body-md text-on-surface-variant text-[12px] truncate pl-5">30 Semen Gresik, 40 Triplek Meranti, Ongkir Truk</p>
-          </div>
-          <div class="flex items-center justify-between pt-1 border-t border-outline-variant/20">
-            <button 
-              type="button" 
-              data-nota="NOTA-016" 
-              data-nominal="Rp 4.670.000" 
-              class="btn-settle-nota h-7 px-2.5 rounded-lg bg-secondary text-on-secondary hover:bg-secondary-container text-label-md font-bold flex items-center gap-1 shadow-sm active:scale-95 transition-all"
-            >
-              <span class="material-symbols-outlined text-[15px]">check_circle</span>
-              Lunaskan
-            </button>
-            <div class="flex items-center gap-1.5 ml-auto">
-              <button 
-                type="button" 
-                data-nota="NOTA-016" 
-                class="btn-detail-nota h-7 px-2.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high text-label-md font-semibold flex items-center gap-1 transition-colors active:scale-95"
-              >
-                <span class="material-symbols-outlined text-[15px]">visibility</span>
-                Rincian
-              </button>
-              <button 
-                type="button" 
-                data-nota="NOTA-016" 
-                class="btn-print-card h-7 px-2.5 rounded-lg bg-secondary text-on-secondary hover:bg-secondary-container text-label-md font-semibold flex items-center gap-1 shadow-sm transition-colors active:scale-95"
-              >
-                <span class="material-symbols-outlined text-[15px]">print</span>
-                Cetak
-              </button>
-            </div>
-          </div>
-        </article>
-
-        <!-- Item Nota 4 -->
-        <article 
-          class="bg-surface-container-lowest rounded-xl p-3 shadow-sm border border-outline-variant/30 flex flex-col gap-2 transaction-item cursor-pointer hover:shadow-md transition-shadow active:scale-[0.99]" 
-          data-id="NOTA-015" 
-          data-nota="NOTA-015" 
-          data-type="lunas non-tunai"
-        >
-          <div class="flex items-center justify-between border-b border-outline-variant/20 pb-1.5">
-            <div class="flex items-center gap-2">
-              <span class="font-tabular-numeric text-tabular-numeric font-extrabold text-on-surface">NOTA-015</span>
-              <span class="text-on-surface-variant text-[11px] bg-surface-container px-1.5 py-0.5 rounded font-medium">10:20 WIB</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span class="text-[11px] font-bold text-on-surface px-2 py-0.5 rounded bg-surface-container">Lunas</span>
-              <span class="font-tabular-numeric text-title-md font-extrabold text-on-surface">Rp 2.260.000</span>
-            </div>
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <div class="flex items-center gap-1 text-[13px] font-semibold text-on-surface">
-              <span class="material-symbols-outlined text-[16px] text-on-surface-variant">person</span>
-              Pak Slamet (Bengkel Las Kurnia)
-            </div>
-            <p class="text-body-md text-on-surface-variant text-[12px] truncate pl-5">50 Kg Paku Kayu 5cm, 20 Lbr Seng Gelombang</p>
-          </div>
-          <div class="flex items-center justify-end gap-1.5 pt-1 border-t border-outline-variant/20">
-            <button 
-              type="button" 
-              data-nota="NOTA-015" 
-              class="btn-detail-nota h-7 px-2.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high text-label-md font-semibold flex items-center gap-1 transition-colors active:scale-95"
-            >
-              <span class="material-symbols-outlined text-[15px]">visibility</span>
-              Rincian
-            </button>
-            <button 
-              type="button" 
-              data-nota="NOTA-015" 
-              class="btn-print-card h-7 px-2.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container text-label-md font-semibold flex items-center gap-1 shadow-sm transition-colors active:scale-95"
-            >
-              <span class="material-symbols-outlined text-[15px]">print</span>
-              Cetak
-            </button>
-          </div>
-        </article>
+        <p class="text-center text-on-surface-variant text-[13px] py-8" id="list-status">Memuat nota...</p>
 
       </section>
 
@@ -485,7 +307,7 @@
             <span class="font-medium text-on-surface" id="modal-shipping">Sudah Termasuk (Rp 150.000)</span>
           </div>
           <div class="flex items-center justify-between text-[13px] text-on-surface-variant">
-            <span>Diskon Pelanggan</span>
+            <span>Proteksi Terpal</span>
             <span class="font-medium text-on-surface" id="modal-discount">Rp 0</span>
           </div>
           <div class="pt-2 border-t border-outline-variant/40 flex items-center justify-between">
@@ -707,10 +529,6 @@
           <div class="flex justify-between items-center text-body-md">
             <span class="text-on-surface-variant">Sisa Tagihan:</span>
             <span class="font-bold font-tabular-numeric text-secondary" id="settle-target-nominal">Rp 4.670.000</span>
-          </div>
-          <div class="flex justify-between items-center text-body-md">
-            <span class="text-on-surface-variant">Metode:</span>
-            <span class="font-medium text-on-surface">Kas / Tunai Toko</span>
           </div>
         </div>
         <p class="text-[11px] text-on-surface-variant">*Perubahan status akan dicatat dalam ringkasan transaksi hari ini.</p>
