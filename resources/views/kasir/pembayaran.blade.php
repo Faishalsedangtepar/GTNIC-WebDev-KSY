@@ -282,15 +282,15 @@
 
 <!-- Tombol Aksi Kasir -->
 <button id="btn-submit-kasir"
-  data-url-store="{{ url('/kasir/nota') }}"
-  data-url-selesai="{{ url('/kasir/dashboard') }}"
+  data-url-store="{{ route('kasir.nota.store', [], false) }}"
+  data-url-selesai="{{ route('kasir.dashboard', [], false) }}"
   class="w-full bg-[#ea580c] hover:bg-[#c2410c] disabled:hover:bg-[#ea580c] text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2 group active:scale-[0.99]" type="button">
   <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
   </svg>
   <span id="btn-submit-kasir-text" class="text-sm tracking-wide">Bayar DP &amp; Cetak Nota DO</span>
 </button>
-<button id="btn-batal-kasir" data-url-batal="{{ url('/kasir/keranjang') }}" data-url-kasir="{{ url('/kasir/dashboard') }}" type="button" class="w-full bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-600 font-bold py-2.5 px-4 rounded-xl border border-slate-200 hover:border-slate-300 transition-all flex items-center justify-center gap-2 text-xs active:scale-[0.99]">
+<button id="btn-batal-kasir" data-url-batal="/kasir/keranjang" data-url-kasir="{{ route('kasir.dashboard', [], false) }}" type="button" class="w-full bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-600 font-bold py-2.5 px-4 rounded-xl border border-slate-200 hover:border-slate-300 transition-all flex items-center justify-center gap-2 text-xs active:scale-[0.99]">
   <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
   <span class="">Batalkan Transaksi</span>
 </button>
