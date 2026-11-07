@@ -11,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class NotaController extends Controller
 {
-    private const DP_MINIMAL     = 0.30;   // DP minimal 30% dari total
+    private const DP_MINIMAL     = 0.30;   // DP tetap 30% dari total harga barang (tanpa ongkir & proteksi)
     private const BIAYA_PROTEKSI = 5000;   // Proteksi terpal (opsional di UI)
     private const TARIF_ONGKIR   = ['truk' => 110000, 'pickup' => 65000, 'ambil_sendiri' => 0];
 
@@ -22,7 +22,6 @@ class NotaController extends Controller
             'armada'            => ['required', 'in:truk,pickup,ambil_sendiri'],
             'proteksi'          => ['nullable', 'boolean'],
             'metode'            => ['required', 'in:lunas,dp'],
-            'dibayar'           => ['required_if:metode,dp', 'nullable', 'numeric', 'gt:0'],
             'uang_diterima'     => ['nullable', 'numeric', 'gt:0'],   // uang tunai dari pelanggan (untuk kembalian)
             'nama_pembeli'      => ['nullable', 'required_if:metode,dp', 'required_unless:armada,ambil_sendiri', 'string', 'max:100'],
             'no_hp'             => ['nullable', 'required_if:metode,dp', 'required_unless:armada,ambil_sendiri', 'regex:/^[0-9+\-\s]{8,20}$/'],
@@ -85,14 +84,9 @@ class NotaController extends Controller
             if ($data['metode'] === 'lunas') {
                 $dibayar = $total;
             } else {
-                $dibayar = (float) $data['dibayar'];
-                $minimal = ceil($total * self::DP_MINIMAL);
+                // DP dihitung server: 30% dari total harga barang yang dibeli
+                $dibayar = ceil($subtotal * self::DP_MINIMAL);
 
-                if ($dibayar < $minimal) {
-                    throw ValidationException::withMessages([
-                        'dibayar' => 'DP minimal Rp ' . number_format($minimal, 0, ',', '.') . ' (30% dari total).',
-                    ]);
-                }
                 if ($dibayar >= $total) {
                     throw ValidationException::withMessages([
                         'dibayar' => 'DP harus kurang dari total. Pilih Lunas untuk bayar penuh.',

@@ -20,6 +20,18 @@ class KasirController extends Controller
         ]);
     }
 
+    // GET /kasir/checkout : halaman pembayaran
+    public function checkout(Request $request)
+    {
+        $keranjang = $this->keranjangPayload($request->user()->id);
+
+        if ($keranjang['items']->isEmpty()) {
+            return redirect('/kasir/dashboard');
+        }
+
+        return view('kasir.pembayaran', ['keranjang' => $keranjang]);
+    }
+
     // GET /kasir/produk?kategori=ID&q=kata : katalog (JSON)
     public function produk(Request $request): JsonResponse
     {
@@ -181,4 +193,6 @@ class KasirController extends Controller
     {
         return rtrim(rtrim(number_format($n, 2, '.', ''), '0'), '.');
     }
+
+    
 }

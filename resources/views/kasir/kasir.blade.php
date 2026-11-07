@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>Aura Material - Kasir</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -244,14 +245,6 @@
         </div>
       </div>
 
-      <!-- Kolom kanan bawah: catatan -->
-      <div class="flex flex-col gap-1.5">
-        <label class="2text-xs font-bold text-on-surface flex items-center gap-1" for="item-notes">
-          <span class="material-symbols-outlined text-[15px] text-on-surface-variant">edit_note</span>
-          Catatan Item / Proyek (Opsional)
-        </label>
-        <input class="w-full h-10 px-3 rounded-xl bg-surface-container-lowest border border-outline-variant/60 text-xs text-on-surface placeholder:text-outline focus:outline-none focus:border-amber-600 font-medium" id="item-notes" placeholder="Contoh: Titip truk siang, proyek Pak Joko Buaran..." type="text"/>
-      </div>
     </div>
 
     <!-- Footer -->

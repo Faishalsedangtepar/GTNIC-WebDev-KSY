@@ -65,7 +65,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/nota/{id}/lunasi', [NotaController::class, 'lunasi'])->name('nota.lunasi')->whereNumber('id');
 
             Route::view('/riwayat', 'kasir.riwayat')->name('riwayat');
-            Route::view('/pembayaran', 'kasir.pembayaran')->name('pembayaran');
+            Route::get('/pembayaran', [KasirController::class, 'checkout'])->name('pembayaran');
         });
 
     Route::get('/force-logout', function (Request $request) {
