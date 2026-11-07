@@ -232,3 +232,68 @@ if (typeof originalApplyArmada === 'function') {
     recalculateDpValues();
   };
 }
+
+// ---------------------------------------------------------------
+// Uang diterima dari pelanggan & kembalian
+// ---------------------------------------------------------------
+function initUangPelanggan() {
+  var input   = document.getElementById('uang-diterima');
+  var tagihan = document.getElementById('summary-total-tagihan');
+  var row     = document.getElementById('kembalian-row');
+  var label   = document.getElementById('kembalian-label');
+  var val     = document.getElementById('kembalian-val');
+  var submit  = document.getElementById('btn-submit-kasir');
+
+  if (!input || !tagihan || !row || !label || !val || !submit) return;
+
+  var base = 'flex items-center justify-between px-3 py-2 rounded-lg border ';
+  var styles = {
+    netral: base + 'bg-white border-slate-200 text-slate-600',
+    ok:     base + 'bg-emerald-50 border-emerald-200 text-emerald-700',
+    kurang: base + 'bg-rose-50 border-rose-200 text-rose-700'
+  };
+
+  function updateKembalian() {
+    var total = getCleanNumeric(tagihan.textContent);
+    var uang  = getCleanNumeric(input.value);
+
+    input.value = uang ? uang.toLocaleString('id-ID') : '';
+    input.dataset.raw = uang;
+
+    if (uang === 0) {
+      row.className = styles.netral;
+      label.textContent = 'Kembalian';
+      val.textContent = 'Rp 0';
+    } else if (uang >= total) {
+      row.className = styles.ok;
+      label.textContent = 'Kembalian';
+      val.textContent = formatRupiahNum(uang - total);
+    } else {
+      row.className = styles.kurang;
+      label.textContent = 'Uang Kurang';
+      val.textContent = formatRupiahNum(total - uang);
+    }
+
+    var bolehBayar = uang >= total && total > 0;
+    submit.disabled = !bolehBayar;
+    submit.classList.toggle('opacity-50', !bolehBayar);
+    submit.classList.toggle('cursor-not-allowed', !bolehBayar);
+  }
+
+  input.addEventListener('input', updateKembalian);
+
+  // Hitung ulang otomatis kalau total tagihan berubah (ganti Lunas/DP, armada, dll.)
+  new MutationObserver(updateKembalian).observe(tagihan, {
+    childList: true,
+    characterData: true,
+    subtree: true
+  });
+
+  updateKembalian();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initUangPelanggan);
+} else {
+  initUangPelanggan();
+}
