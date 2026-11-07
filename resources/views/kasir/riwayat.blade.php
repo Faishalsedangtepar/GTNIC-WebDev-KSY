@@ -48,7 +48,7 @@
 </head>
 
 <body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"
-  data-base="{{ url('/kasir') }}"
+  data-base="/kasir"
   data-kasir="{{ auth()->user()->username }}"
   data-tanggal="{{ now(config('app.timezone'))->toDateString() }}">
   
