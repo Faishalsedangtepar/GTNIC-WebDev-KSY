@@ -349,53 +349,16 @@ async function batalkanTransaksi() {
 }
 
 // ---------------------------------------------------------------- cetak nota
-async function cetakNota(id) {
+// Struk dibuat server (kasir/struk.blade.php) lewat GET /kasir/nota/{id}/cetak,
+// sama dengan tombol Cetak di Riwayat. Halaman struk membuka dialog print sendiri.
+function cetakNota(id) {
   try {
     var base = $('btn-submit-kasir').dataset.urlStore;
-    var res = await fetch(base + '/' + id, {
-      credentials: 'same-origin',
-      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-    });
-    if (!res.ok) throw new Error('gagal ambil nota');
-    var n = await res.json();
-
-    var rows = n.items.map(function (i) {
-      return '<tr><td colspan="3">' + esc(i.nama) + '</td></tr>' +
-        '<tr><td>' + i.qty + ' ' + esc(i.satuan) + ' x ' + formatRupiahNum(i.harga) + '</td><td></td>' +
-        '<td class="r">' + formatRupiahNum(i.subtotal) + '</td></tr>';
-    }).join('');
-
-    var baris = function (label, v) {
-      return '<tr><td colspan="2">' + label + '</td><td class="r">' + v + '</td></tr>';
-    };
-
-    var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + esc(n.nomor) + '</title>' +
-      '<style>body{font:12px/1.4 monospace;width:280px;margin:0 auto;padding:8px}' +
-      'table{width:100%;border-collapse:collapse}.r{text-align:right}h1{font-size:14px;text-align:center;margin:0}' +
-      'hr{border:0;border-top:1px dashed #000;margin:6px 0}p{margin:2px 0}</style></head><body>' +
-      '<h1>AURA MATERIAL</h1><p style="text-align:center">Nota Kasir</p><hr>' +
-      '<p>No: ' + esc(n.nomor) + '</p><p>Tgl: ' + esc(n.tanggal) + '</p>' +
-      (n.nama_pembeli ? '<p>Pembeli: ' + esc(n.nama_pembeli) + '</p>' : '') +
-      (n.no_hp ? '<p>HP: ' + esc(n.no_hp) + '</p>' : '') +
-      (n.alamat_pengiriman ? '<p>Kirim ke: ' + esc(n.alamat_pengiriman) + '</p>' : '') +
-      (n.catatan_lokasi ? '<p>Lokasi: ' + esc(n.catatan_lokasi) + '</p>' : '') +
-      '<hr><table>' + rows + '</table><hr><table>' +
-      baris('Ongkir (' + esc(n.armada) + ')', formatRupiahNum(n.ongkir)) +
-      (n.biaya_proteksi > 0 ? baris('Proteksi terpal', formatRupiahNum(n.biaya_proteksi)) : '') +
-      baris('<b>TOTAL</b>', '<b>' + formatRupiahNum(n.total) + '</b>') +
-      baris('Dibayar', formatRupiahNum(n.dibayar)) +
-      (n.sisa > 0 ? baris('<b>SISA</b>', '<b>' + formatRupiahNum(n.sisa) + '</b>') : '') +
-      '</table><hr><p>Status: ' + esc(String(n.status_bayar).toUpperCase()) + '</p>' +
-      (n.catatan_sopir ? '<p>Catatan sopir: ' + esc(n.catatan_sopir) + '</p>' : '') +
-      '<p style="text-align:center;margin-top:8px">Terima kasih</p></body></html>';
-
     var f = document.createElement('iframe');
     f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0';
+    f.src = base + '/' + id + '/cetak';
     document.body.appendChild(f);
-    var d = f.contentWindow.document;
-    d.open(); d.write(html); d.close();
-    setTimeout(function () { f.contentWindow.focus(); f.contentWindow.print(); }, 250);
-    setTimeout(function () { f.remove(); }, 60000);
+    setTimeout(function () { f.remove(); }, 120000);
   } catch (e) {
     showAlert('ok', ['Nota tersimpan, tetapi gagal membuka tampilan cetak. Buka lagi dari Riwayat Nota.']);
   }

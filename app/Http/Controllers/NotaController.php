@@ -15,6 +15,9 @@ class NotaController extends Controller
     private const BIAYA_PROTEKSI = 5000;   // Proteksi terpal (opsional di UI)
     private const TARIF_ONGKIR   = ['truk' => 110000, 'pickup' => 65000, 'ambil_sendiri' => 0];
 
+    // Identitas toko di header struk (ganti dengan data sebenarnya)
+    private const TOKO = ['nama' => 'Aura Material', 'alamat' => 'Jl. Contoh No. 1, Yogyakarta', 'telp' => '0274-000000'];
+
     // POST /kasir/nota : checkout (keranjang -> nota)
     public function store(Request $request): JsonResponse
     {
@@ -118,6 +121,14 @@ class NotaController extends Controller
                 array_map(fn ($b) => ['nota_id' => $notaId] + $b, $baris)
             );
 
+            // Catat uang masuk ke tabel pembayaran (dasar Total Omzet & Z-Report)
+            DB::table('pembayaran')->insert([
+                'nota_id'  => $notaId,
+                'kasir_id' => $kasirId,
+                'jenis'    => $data['metode'],   // 'lunas' atau 'dp'
+                'jumlah'   => $dibayar,
+            ]);
+
             foreach ($baris as $b) {
                 if ($b['produk_id']) {
                     DB::table('produk')->where('id', $b['produk_id'])->decrement('stok', $b['qty']);
@@ -138,85 +149,93 @@ class NotaController extends Controller
         return response()->json($this->ringkas($nota) + ['kembalian' => $kembalian], 201);
     }
 
-    // GET /kasir/nota?status=lunas|dp|tempo|belum_dibayar&q=&dari=&sampai= : riwayat
+    // GET /kasir/nota?status=lunas|dp|tempo|belum_dibayar&q=&dari=&sampai= : daftar riwayat
     public function index(Request $request): JsonResponse
     {
         $request->validate([
             'status' => ['nullable', 'in:lunas,dp,tempo,belum_dibayar'],
+            'q'      => ['nullable', 'string', 'max:100'],
             'dari'   => ['nullable', 'date'],
             'sampai' => ['nullable', 'date'],
         ]);
 
         $status = $request->query('status') === 'tempo' ? 'dp' : $request->query('status');
 
-        $hal = DB::table('nota')
+        $hal = $this->dasar($request)
             ->select('nota.*')
             ->selectSub(
                 fn ($s) => $s->from('nota_item')->selectRaw('COALESCE(SUM(qty), 0)')->whereColumn('nota_item.nota_id', 'nota.id'),
                 'jumlah_item'
             )
-            ->where('kasir_id', $request->user()->id)
-            ->when($status, fn ($q) => $q->where('status_bayar', $status))
-            ->when($request->filled('q'), function ($q) use ($request) {
-                $kata = trim((string) $request->query('q'));
-                $q->where(function ($w) use ($kata) {
-                    $w->whereLike('nama_pembeli', "%{$kata}%");
-                    if (ctype_digit($kata)) {
-                        $w->orWhere('id', (int) $kata);
-                    }
-                });
-            })
-            ->when($request->filled('dari'), fn ($q) => $q->whereDate('tanggal', '>=', $request->query('dari')))
-            ->when($request->filled('sampai'), fn ($q) => $q->whereDate('tanggal', '<=', $request->query('sampai')))
-            ->orderByDesc('id')
+            ->selectRaw("(
+                SELECT string_agg(
+                    CASE WHEN ni.produk_id IS NULL THEN ni.keterangan
+                         ELSE trim_scale(ni.qty)::text || ' ' || p.nama END,
+                    ', ' ORDER BY ni.id)
+                FROM nota_item ni
+                LEFT JOIN produk p ON p.id = ni.produk_id
+                WHERE ni.nota_id = nota.id
+            ) AS item_ringkas")
+            ->when($status, fn ($q) => $q->where('nota.status_bayar', $status))
+            ->orderByDesc('nota.id')
             ->paginate(30)
             ->through(fn ($n) => $this->ringkas($n) + [
                 'tanggal'      => $n->tanggal,
                 'nama_pembeli' => $n->nama_pembeli,
                 'armada'       => $n->armada,
                 'jumlah_item'  => (float) $n->jumlah_item,
+                'item_ringkas' => $n->item_ringkas,
             ]);
 
         return response()->json($hal);
     }
 
-    // GET /kasir/nota/{id} : detail untuk modal / cetak
+    // GET /kasir/nota/ringkasan?dari=&sampai=&q= : Total Omzet + badge tab
+    public function ringkasan(Request $request): JsonResponse
+    {
+        $request->validate([
+            'q'      => ['nullable', 'string', 'max:100'],
+            'dari'   => ['nullable', 'date'],
+            'sampai' => ['nullable', 'date'],
+        ]);
+
+        // Badge tab: jumlah nota (ikut tanggal & pencarian, TIDAK ikut status)
+        $hitung = $this->dasar($request)
+            ->selectRaw("COUNT(*) AS semua,
+                         COUNT(*) FILTER (WHERE nota.status_bayar = 'lunas') AS lunas,
+                         COUNT(*) FILTER (WHERE nota.status_bayar = 'dp') AS dp")
+            ->first();
+
+        // Omzet: uang yang MASUK pada rentang tanggal (dari tabel pembayaran)
+        [$awal, $akhir] = $this->rentang($request);
+
+        $omzet = DB::table('pembayaran')
+            ->where('kasir_id', $request->user()->id)
+            ->when($awal,  fn ($q) => $q->where('dibayar_pada', '>=', $awal))
+            ->when($akhir, fn ($q) => $q->where('dibayar_pada', '<=', $akhir))
+            ->sum('jumlah');
+
+        return response()->json([
+            'total_omzet' => (float) $omzet,
+            'semua'       => (int) $hitung->semua,
+            'lunas'       => (int) $hitung->lunas,
+            'dp'          => (int) $hitung->dp,
+        ]);
+    }
+
+    // GET /kasir/nota/{id} : detail untuk modal "Rincian" (JSON)
     public function show(Request $request, int $id): JsonResponse
     {
-        $nota = DB::table('nota')->where('id', $id)->where('kasir_id', $request->user()->id)->first();
-        abort_if(! $nota, 404);
+        return response()->json($this->detail($request, $id));
+    }
 
-        $items = DB::table('nota_item as ni')
-            ->leftJoin('produk as p', 'p.id', '=', 'ni.produk_id')
-            ->leftJoin('satuan as s', 's.id', '=', 'p.satuan_id')
-            ->where('ni.nota_id', $id)
-            ->orderBy('ni.id')
-            ->get([
-                'ni.id',
-                DB::raw('COALESCE(p.nama, ni.keterangan) AS nama'),
-                DB::raw("COALESCE(s.nama, '') AS satuan"),
-                'ni.harga_satuan', 'ni.qty', 'ni.subtotal',
-            ])
-            ->map(fn ($i) => [
-                'id'       => $i->id,
-                'nama'     => $i->nama,
-                'satuan'   => $i->satuan,
-                'harga'    => (float) $i->harga_satuan,
-                'qty'      => (float) $i->qty,
-                'subtotal' => (float) $i->subtotal,
-            ]);
-
-        return response()->json($this->ringkas($nota) + [
-            'tanggal'           => $nota->tanggal,
-            'nama_pembeli'      => $nota->nama_pembeli,
-            'no_hp'             => $nota->no_hp,
-            'alamat_pengiriman' => $nota->alamat_pengiriman,
-            'catatan_lokasi'    => $nota->catatan_lokasi,
-            'catatan_sopir'     => $nota->catatan_sopir,
-            'armada'            => $nota->armada,
-            'ongkir'            => (float) $nota->ongkir,
-            'biaya_proteksi'    => (float) $nota->biaya_proteksi,
-            'items'             => $items,
+    // GET /kasir/nota/{id}/cetak : struk siap print (HTML)
+    public function cetak(Request $request, int $id)
+    {
+        return view('kasir.struk', [
+            'nota'  => $this->detail($request, $id),
+            'kasir' => $request->user()->username,
+            'toko'  => self::TOKO,
         ]);
     }
 
@@ -247,12 +266,120 @@ class NotaController extends Controller
             }
 
             DB::table('nota')->where('id', $id)->increment('dibayar', $jumlah);
+
+            // Catat pelunasan ke tabel pembayaran
+            DB::table('pembayaran')->insert([
+                'nota_id'  => $id,
+                'kasir_id' => $request->user()->id,
+                'jenis'    => 'pelunasan',
+                'jumlah'   => $jumlah,
+            ]);
         });
 
         return response()->json($this->ringkas(DB::table('nota')->where('id', $id)->first()));
     }
 
     // ---------------------------------------------------------------- helper
+
+    // Data lengkap satu nota milik kasir yang login (dipakai show & cetak)
+    private function detail(Request $request, int $id): array
+    {
+        $nota = DB::table('nota')->where('id', $id)->where('kasir_id', $request->user()->id)->first();
+        abort_if(! $nota, 404);
+
+        $items = DB::table('nota_item as ni')
+            ->leftJoin('produk as p', 'p.id', '=', 'ni.produk_id')
+            ->leftJoin('satuan as s', 's.id', '=', 'p.satuan_id')
+            ->where('ni.nota_id', $id)
+            ->orderBy('ni.id')
+            ->get([
+                'ni.id',
+                DB::raw('COALESCE(p.nama, ni.keterangan) AS nama'),
+                DB::raw("COALESCE(s.nama, '') AS satuan"),
+                'ni.harga_satuan', 'ni.qty', 'ni.subtotal',
+            ])
+            ->map(fn ($i) => [
+                'id'       => $i->id,
+                'nama'     => $i->nama,
+                'satuan'   => $i->satuan,
+                'harga'    => (float) $i->harga_satuan,
+                'qty'      => (float) $i->qty,
+                'subtotal' => (float) $i->subtotal,
+            ])
+            ->values()
+            ->all();
+
+        // Riwayat uang masuk nota ini (DP, pelunasan, dst) untuk rincian & struk
+        $pembayaran = DB::table('pembayaran')
+            ->where('nota_id', $id)
+            ->orderBy('id')
+            ->get(['jenis', 'jumlah', 'dibayar_pada'])
+            ->map(fn ($p) => [
+                'jenis'        => $p->jenis,
+                'jumlah'       => (float) $p->jumlah,
+                'dibayar_pada' => $p->dibayar_pada,
+            ])
+            ->values()
+            ->all();
+
+        return $this->ringkas($nota) + [
+            'tanggal'           => $nota->tanggal,
+            'nama_pembeli'      => $nota->nama_pembeli,
+            'no_hp'             => $nota->no_hp,
+            'alamat_pengiriman' => $nota->alamat_pengiriman,
+            'catatan_lokasi'    => $nota->catatan_lokasi,
+            'catatan_sopir'     => $nota->catatan_sopir,
+            'armada'            => $nota->armada,
+            'ongkir'            => (float) $nota->ongkir,
+            'biaya_proteksi'    => (float) $nota->biaya_proteksi,
+            'items'             => $items,
+            'pembayaran'        => $pembayaran,
+        ];
+    }
+
+    // Query dasar riwayat: milik kasir login + rentang tanggal + pencarian
+    private function dasar(Request $request)
+    {
+        [$awal, $akhir] = $this->rentang($request);
+
+        return DB::table('nota')
+            ->where('nota.kasir_id', $request->user()->id)
+            ->when($awal,  fn ($q) => $q->where('nota.tanggal', '>=', $awal))
+            ->when($akhir, fn ($q) => $q->where('nota.tanggal', '<=', $akhir))
+            ->when($request->filled('q'), function ($q) use ($request) {
+                $kata = trim((string) $request->query('q'));
+
+                $q->where(function ($w) use ($kata) {
+                    $w->whereLike('nota.nama_pembeli', "%{$kata}%")
+                      ->orWhereExists(function ($e) use ($kata) {
+                          $e->selectRaw('1')
+                            ->from('nota_item as ni')
+                            ->leftJoin('produk as p', 'p.id', '=', 'ni.produk_id')
+                            ->whereColumn('ni.nota_id', 'nota.id')
+                            ->where(fn ($m) => $m->whereLike('p.nama', "%{$kata}%")
+                                                 ->orWhereLike('ni.keterangan', "%{$kata}%"));
+                      });
+
+                    // "18", "NOTA-018", "INV-018" -> cari berdasarkan id nota
+                    if (preg_match('/^(?:nota|inv)?[-\s]*(\d+)$/i', $kata, $m)) {
+                        $w->orWhere('nota.id', (int) $m[1]);
+                    }
+                });
+            });
+    }
+
+    // "2026-11-07" -> [awal hari, akhir hari] di zona waktu aplikasi, format ISO beroffset
+    private function rentang(Request $request): array
+    {
+        $tz = config('app.timezone');
+
+        return [
+            $request->filled('dari')
+                ? Carbon::parse($request->query('dari'), $tz)->startOfDay()->toIso8601String() : null,
+            $request->filled('sampai')
+                ? Carbon::parse($request->query('sampai'), $tz)->endOfDay()->toIso8601String() : null,
+        ];
+    }
 
     private function ringkas(object $n): array
     {

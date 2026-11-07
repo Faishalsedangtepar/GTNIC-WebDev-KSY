@@ -58,12 +58,15 @@ Route::middleware('auth')->group(function () {
             Route::post('/keranjang/custom', [KasirController::class, 'tambahCustom'])->name('keranjang.custom');
             Route::patch('/keranjang/{id}', [KasirController::class, 'ubah'])->name('keranjang.ubah');
             Route::delete('/keranjang/{id}', [KasirController::class, 'hapus'])->name('keranjang.hapus');
-            Route::delete('keranjang', [KasirController::class, 'kosongkan']);
+            Route::delete('/keranjang', [KasirController::class, 'kosongkan'])->name('keranjang.kosongkan');
 
             Route::get('/nota', [NotaController::class, 'index'])->name('nota.index');
+            Route::get('/nota/ringkasan', [NotaController::class, 'ringkasan'])->name('nota.ringkasan');
             Route::post('/nota', [NotaController::class, 'store'])->name('nota.store');
             Route::get('/nota/{id}', [NotaController::class, 'show'])->name('nota.show')->whereNumber('id');
+            Route::get('/nota/{id}/cetak', [NotaController::class, 'cetak'])->name('nota.cetak')->whereNumber('id');
             Route::post('/nota/{id}/lunasi', [NotaController::class, 'lunasi'])->name('nota.lunasi')->whereNumber('id');
+            
 
             Route::view('/riwayat', 'kasir.riwayat')->name('riwayat');
             Route::get('/pembayaran', [KasirController::class, 'checkout'])->name('pembayaran');
