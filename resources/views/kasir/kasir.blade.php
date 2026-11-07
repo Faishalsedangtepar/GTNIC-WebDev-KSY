@@ -25,32 +25,12 @@
 <body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen antialiased selection:bg-amber-100 selection:text-amber-900">
 
 <!-- ================= HEADER ================= -->
-<header class="fixed top-0 w-full z-40 pt-safe bg-surface-container-lowest/90 backdrop-blur-xl border-b border-surface-container">
-  <div class="h-16 px-4 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-primary-container text-amber-400 flex items-center justify-center shadow-sm">
-        <span class="material-symbols-outlined text-[24px]">construction</span>
-      </div>
-      <div class="flex flex-col">
-        <span class="font-bold text-base text-on-surface leading-tight tracking-tight">Aura Material</span>
-      </div>
-    </div>
-    <div class="flex items-center gap-2">
-      <button aria-label="Status Kasir" class="min-h-[40px] h-10 px-3 bg-surface-container rounded-full flex items-center gap-1.5 border border-outline-variant/40" type="button">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span class="text-xs text-on-surface font-semibold">Kasir Hendra</span>
-      </button>
-      <button aria-label="Profil dan Pengaturan Sesi" class="min-h-[40px] min-w-[40px] h-10 w-10 rounded-full flex items-center justify-center p-0.5 border border-surface-container-high" type="button">
-        <img alt="Hendra Pratama" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnbnWs_y2AKUny2UOq8hCe8jbScIhphtQhkKe2EsEsW59q1UlGyOOlSQ1LUcxEzlmx62NANblElcUl4SGkxyt_ojVJZ8-frBGnFIyq20qkL9Ib_ZlCIVsFYg17ShTrpnYbwqYDgG8SpG1bYgh-LFvrNXXwB3u6Ha-RHyG0jkWxGltdDmhFnKuKVgXvSL2eop0I2ZVp3xI4DF4wBT8aVwu_mSc0ErYmQh0ymzuN9hF32rrgtOCxA5cKAw"/>
-      </button>
-    </div>
-  </div>
-</header>
+@include('partials.kasir-navbar')
 
 
 
 <!-- ================= MAIN ================= -->
-<main class="flex-1 flex flex-col relative w-full pt-16 bg-surface">
+<main class="flex-1 flex flex-col relative w-full bg-surface">
 
   <!-- Area katalog: di layar lebar diberi ruang kanan untuk sidebar nota -->
   <div class="flex flex-col w-full pb-36 md:pb-6 md:pr-80 lg:pr-96">

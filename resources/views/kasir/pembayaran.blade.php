@@ -20,30 +20,7 @@
 </head>
 <body class="min-h-screen flex flex-col font-sans lg:h-screen lg:overflow-hidden">
 <!-- BEGIN: TopHeader -->
-<header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-  <!-- Logo Toko Material -->
-  <div class="flex items-center gap-3">
-    <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-amber-500 shadow-md border border-slate-800">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-      </svg>
-    </div>
-    <div class="flex items-center gap-2">
-      <span class="text-xl font-extrabold tracking-tight text-slate-900">Aura<span class="text-[#ea580c]">Material</span></span>
-      
-    </div>
-  </div>
-  <!-- Cashier Profile & Shift Status -->
-  <div class="flex items-center gap-3">
-    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200/80">
-      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-      <span class="">Kasir Hendra</span>
-    </div>
-    <div class="w-9 h-9 rounded-full bg-slate-200 border border-slate-300 overflow-hidden flex items-center justify-center shadow-xs">
-      <img class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&amp;fit=crop&amp;w=120&amp;q=80" alt="Kasir Hendra">
-    </div>
-  </div>
-</div></header>
+@include('partials.kasir-navbar')
 <!-- END: TopHeader -->
 <!-- BEGIN: MainContent -->
 <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-4 lg:overflow-hidden lg:flex lg:flex-col">

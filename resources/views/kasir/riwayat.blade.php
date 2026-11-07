@@ -49,27 +49,11 @@
 <body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen">
   
   <!-- Header Sticky (Tetap di Atas) -->
-  <header class="fixed top-0 w-full z-40 pt-safe bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pointer-events-auto">
-    <div class="h-12 px-gutter flex items-center justify-between border-b border-outline-variant/30 bg-surface-container-lowest">
-      <div class="flex items-center gap-2">
-        <div class="w-7 h-7 rounded-lg bg-primary-container text-on-primary flex items-center justify-center shadow-sm">
-          <span class="material-symbols-outlined text-[18px] text-secondary-container">handyman</span>
-        </div>
-        <span class="font-title-lg text-title-lg font-bold text-on-surface tracking-tight">Aura Material</span>
-      </div>
+  @include('partials.kasir-navbar')
 
-      <div class="flex items-center gap-2">
-        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container text-on-surface text-[12px] font-semibold shadow-sm">
-          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span>Kasir Hendra</span>
-        </div>
-        <div class="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-on-primary text-[11px] font-bold">
-          H
-        </div>
-      </div>
-    </div>
-
-    <div class="h-16 px-gutter flex items-center justify-between">
+<!-- Baris judul halaman (milik halaman ini): menempel tepat di bawah navbar -->
+<div class="fixed inset-x-0 z-30 top-[calc(4rem+env(safe-area-inset-top,0px))] bg-[#f8f9ff]/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+  <div class="h-16 px-gutter flex items-center justify-between">
       <div class="flex items-center gap-space-sm">
         <button 
           type="button" 
@@ -90,15 +74,12 @@
         >
           <span class="material-symbols-outlined text-[22px]">calendar_today</span>
         </button>
-        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-space-xs">
-          <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
-        </div>
       </div>
     </div>
-  </header>
+</div>
 
   <!-- Container Scrollable Utama (Bisa Di-scroll Mandiri ke Bawah) -->
-  <main class="flex-1 w-full bg-surface pt-28 pb-32 overflow-y-auto custom-scrollbar" id="main-scroll-container">
+  <main class="flex-1 w-full bg-surface pt-16 pb-32 overflow-y-auto custom-scrollbar" id="main-scroll-container">
     <div class="flex flex-col w-full pb-20">
 
       <!-- 1. Ringkasan Eksekutif -->
