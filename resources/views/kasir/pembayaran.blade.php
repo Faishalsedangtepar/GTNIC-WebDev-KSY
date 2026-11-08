@@ -297,7 +297,7 @@
 </button>
 <!-- Disclaimer / Legal Info -->
 <p class="text-[11px] text-center text-slate-400 leading-normal">
-  Dengan menyelesaikan transaksi, nota resmi otomatis tercatat pada pembukuan kasir &amp; inventaris gudang Aura Material.
+  Dengan menyelesaikan transaksi, nota resmi otomatis tercatat pada pembukuan kasir &amp; inventaris gudang UD.Tentrem.
 </p></article>
 </aside>
 <!-- END: RightColumn -->
@@ -308,7 +308,7 @@
 <footer class="mt-auto border-t border-slate-200 bg-white py-4">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
 <div class="">
-        © 2024 <strong>Aura Material</strong> — Platform Manajemen Kasir &amp; Logistik Bahan Bangunan.
+       {{ date('Y') }} <strong>UD.Tentrem</strong> — Platform Manajemen Kasir &amp; Logistik Bahan Bangunan.
       </div>
 </div>
 </footer>

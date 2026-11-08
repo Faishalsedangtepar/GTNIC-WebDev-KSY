@@ -412,7 +412,7 @@
 
         <div class="text-[11px] text-on-surface-variant/80 flex items-center gap-1 justify-center pb-1 shrink-0">
           <span class="material-symbols-outlined text-[14px]">verified</span>
-          <span>Laporan Z-Report Kasir Aura Material</span>
+          <span>Laporan Z-Report Kasir UD.Tentrem</span>
         </div>
       </div>
 

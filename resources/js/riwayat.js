@@ -358,7 +358,7 @@
       let nomor = String(n.no_hp).replace(/\D/g, '');
       if (nomor.startsWith('0')) nomor = '62' + nomor.slice(1);
 
-      const teks = ['Nota ' + n.nomor + ' - Aura Material',
+      const teks = ['Nota ' + n.nomor + ' - UD.Tentrem',
                     'Total   : ' + rp(n.total),
                     'Dibayar : ' + rp(n.dibayar),
                     'Sisa    : ' + rp(n.sisa)].join('\n');
