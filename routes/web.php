@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KasirController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\NotaController;
+use App\Http\Controllers\ZReportController;
 
 // Halaman awal diarahkan ke login.
 Route::get('/', fn () => redirect()->route('login'));
@@ -66,6 +67,8 @@ Route::middleware('auth')->group(function () {
             Route::get('/nota/{id}', [NotaController::class, 'show'])->name('nota.show')->whereNumber('id');
             Route::get('/nota/{id}/cetak', [NotaController::class, 'cetak'])->name('nota.cetak')->whereNumber('id');
             Route::post('/nota/{id}/lunasi', [NotaController::class, 'lunasi'])->name('nota.lunasi')->whereNumber('id');
+            Route::get('/z-report', [ZReportController::class, 'show'])->name('zreport');
+            Route::get('/z-report/cetak', [ZReportController::class, 'cetak'])->name('zreport.cetak');
             
 
             Route::view('/riwayat', 'kasir.riwayat')->name('riwayat');

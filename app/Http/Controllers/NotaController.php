@@ -16,7 +16,7 @@ class NotaController extends Controller
     private const TARIF_ONGKIR   = ['truk' => 110000, 'pickup' => 65000, 'ambil_sendiri' => 0];
 
     // Identitas toko di header struk (ganti dengan data sebenarnya)
-    private const TOKO = ['nama' => 'Aura Material', 'alamat' => 'Jl. Contoh No. 1, Yogyakarta', 'telp' => '0274-000000'];
+    public const TOKO = ['nama' => 'Aura Material', 'alamat' => 'Jl. Contoh No. 1, Yogyakarta', 'telp' => '0274-000000'];
 
     // POST /kasir/nota : checkout (keranjang -> nota)
     public function store(Request $request): JsonResponse

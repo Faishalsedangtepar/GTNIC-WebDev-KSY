@@ -4,7 +4,9 @@
 //   GET  /kasir/nota/{id}                             Rincian
 //   GET  /kasir/nota/{id}/cetak                       Cetak (tab baru)
 //   POST /kasir/nota/{id}/lunasi                      Lunaskan
-// Z-Report dan Export belum tersambung (menunggu endpoint-nya).
+//   GET  /kasir/z-report?dari=&sampai=                Rekap Z-Report
+//   GET  /kasir/z-report/cetak?dari=&sampai=          Cetak Z-Report
+//   GET  /kasir/nota/export?dari=&sampai=&status=&q=  Export .xlsx
 (function () {
   const BASE     = document.body.dataset.base;      // mis. http://host/kasir
   const KASIR    = document.body.dataset.kasir;     // username kasir login
@@ -33,6 +35,9 @@
   const jam = (s) => parseTanggal(s)
     .toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Jakarta' })
     .replace('.', ':');
+  // 6/11/2026
+  const tglPendek = (s) => parseTanggal(s)
+    .toLocaleDateString('id-ID', { day: 'numeric', month: 'numeric', year: 'numeric', timeZone: 'Asia/Jakarta' });
   const waktuLengkap = (s) => parseTanggal(s)
     .toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Jakarta' })
     .replace('.', ':').replace(' pukul ', ', ') + ' WIB';
@@ -159,10 +164,10 @@
     return `
       <article data-id="${n.id}"
         class="bg-surface-container-lowest rounded-xl p-3 shadow-sm border ${cardBorder} flex flex-col gap-2 transaction-item cursor-pointer hover:shadow-md transition-shadow active:scale-[0.99]">
-        <div class="flex items-center justify-between border-b border-outline-variant/20 pb-1.5">
-          <div class="flex items-center gap-2">
+        <div class="flex items-center justify-between flex-wrap gap-y-1 border-b border-outline-variant/20 pb-1.5">
+          <div class="flex items-center gap-2 flex-wrap">
             <span class="font-tabular-numeric text-tabular-numeric font-extrabold text-on-surface">${esc(n.nomor)}</span>
-            <span class="text-on-surface-variant text-[11px] bg-surface-container px-1.5 py-0.5 rounded font-medium">${esc(jam(n.tanggal))} WIB</span>
+            <span class="text-on-surface-variant text-[11px] bg-surface-container px-1.5 py-0.5 rounded font-medium">${esc(tglPendek(n.tanggal))}, ${esc(jam(n.tanggal))} WIB</span>
           </div>
           <div class="flex items-center gap-1.5 ml-auto">
             <span class="${badgeCls}">${badge}</span>
@@ -272,7 +277,8 @@
     inputTanggal.addEventListener('change', () => {
       state.tanggal = inputTanggal.value || HARI_INI;
       const hariIni = state.tanggal === HARI_INI;
-      $('page-title').textContent = hariIni ? 'Riwayat Nota Penjualan Hari Ini' : 'Riwayat Nota ' + labelTanggal(state.tanggal);
+      const judul = $('page-title');
+      if (judul) judul.textContent = hariIni ? 'Riwayat Nota Penjualan Hari Ini' : 'Riwayat Nota ' + labelTanggal(state.tanggal);
       $('chip-hari').textContent  = hariIni ? 'Hari Ini' : labelTanggal(state.tanggal);
       $('ringkasan-tanggal').textContent = labelTanggal(state.tanggal);
       muatSemua();
@@ -415,22 +421,50 @@
     if (kartuEl) bukaDetail(kartuEl.dataset.id);
   });
 
-  // ------------------------------------------------------------ Z-Report & Export (belum tersambung)
+  // ------------------------------------------------------------ Z-Report
   const mRekap = $('modal-rekap-shift');
   const sRekap = $('modal-rekap-sheet-panel');
   const tutupRekap = () => tutupModal(mRekap, sRekap);
 
+  async function bukaRekap() {
+    let z;
+    try { z = await api('/z-report' + qs(rentangApi())); } catch (e) { toast(e.message); return; }
+
+    $('z-periode').textContent = z.periode_label;
+    $('z-kasir').textContent   = 'Kasir ' + z.kasir;
+    $('z-total').textContent   = rp(z.total_omzet);
+    $('z-trx').textContent     = z.total_trx + ' pembayaran';
+    $('z-nota').textContent    = z.jumlah_nota + ' Nota';
+    $('z-lunas-trx').textContent   = '(' + z.lunas.trx + ' trx)';
+    $('z-lunas-total').textContent = rp(z.lunas.total);
+    $('z-dp-trx').textContent      = '(' + z.dp.trx + ' trx)';
+    $('z-dp-total').textContent    = rp(z.dp.total);
+    $('z-omzet').textContent       = rp(z.total_omzet);
+
+    bukaModal(mRekap, sRekap);
+  }
+
   const btnRekap = $('btn-rekap-shift');
-  if (btnRekap) btnRekap.addEventListener('click', () => bukaModal(mRekap, sRekap));
+  if (btnRekap) btnRekap.addEventListener('click', bukaRekap);
   [$('modal-rekap-backdrop'), $('btn-close-rekap-x'), $('btn-close-rekap-modal')].forEach((el) => {
     if (el) el.addEventListener('click', tutupRekap);
   });
 
   const btnCetakZ = $('btn-print-zreport-modal');
-  if (btnCetakZ) btnCetakZ.addEventListener('click', () => toast('Cetak Z-Report belum tersedia'));
+  if (btnCetakZ) {
+    btnCetakZ.addEventListener('click', () => {
+      window.open(BASE + '/z-report/cetak' + qs(rentangApi()), '_blank');
+    });
+  }
 
+  // ------------------------------------------------------------ Export (.xlsx)
+  // Mengikuti apa yang sedang tampil: tanggal, tab (Semua/Lunas/DP), dan kata pencarian.
   const btnExport = $('btn-export-excel');
-  if (btnExport) btnExport.addEventListener('click', () => toast('Export belum tersedia'));
+  if (btnExport) {
+    btnExport.addEventListener('click', () => {
+      window.location.href = BASE + '/nota/export' + qs(Object.assign(rentangApi(), { status: statusApi(), q: state.q }));
+    });
+  }
 
   // ------------------------------------------------------------ ESC & mulai
   window.addEventListener('keydown', (e) => {
