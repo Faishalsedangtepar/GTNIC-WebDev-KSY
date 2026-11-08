@@ -59,7 +59,6 @@
 <div class="fixed inset-x-0 z-30 top-[calc(4rem+env(safe-area-inset-top,0px))] bg-[#f8f9ff]/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
   <div class="h-16 px-gutter flex items-center justify-between">
     @include('partials.back-button', ['class' => 'mb-3'])
-    
       <div class="flex items-center gap-space-xs">
         <button 
           type="button" 
@@ -67,7 +66,6 @@
           aria-label="Filter Kalender" 
           class="w-11 h-11 flex items-center justify-center text-on-surface-variant hover:text-on-surface active:scale-95 transition-all"
         >
-          <span class="material-symbols-outlined text-[22px]">calendar_today</span>
         </button>
         <input type="date" id="input-tanggal" class="sr-only" tabindex="-1" aria-hidden="true">
       </div>
