@@ -167,24 +167,28 @@ class NotaController extends Controller
                 fn ($s) => $s->from('nota_item')->selectRaw('COALESCE(SUM(qty), 0)')->whereColumn('nota_item.nota_id', 'nota.id'),
                 'jumlah_item'
             )
-            ->selectRaw("(
-                SELECT string_agg(
-                    CASE WHEN ni.produk_id IS NULL THEN ni.keterangan
-                         ELSE trim_scale(ni.qty)::text || ' ' || p.nama END,
-                    ', ' ORDER BY ni.id)
-                FROM nota_item ni
-                LEFT JOIN produk p ON p.id = ni.produk_id
-                WHERE ni.nota_id = nota.id
-            ) AS item_ringkas")
             ->when($status, fn ($q) => $q->where('nota.status_bayar', $status))
             ->orderByDesc('nota.id')
-            ->paginate(30)
-            ->through(fn ($n) => $this->ringkas($n) + [
-                'tanggal'      => $n->tanggal,
+            ->paginate(30);
+
+        // Ringkasan item ("2,5 Semen, Ongkir") dirakit di PHP, bukan di SQL, supaya
+        // jalan sama di MySQL dan PostgreSQL. Satu query untuk seluruh halaman (tanpa N+1).
+        $ringkasItem = DB::table('nota_item as ni')
+            ->leftJoin('produk as p', 'p.id', '=', 'ni.produk_id')
+            ->whereIn('ni.nota_id', $hal->pluck('id')->all())
+            ->orderBy('ni.id')
+            ->get(['ni.nota_id', 'ni.produk_id', 'ni.keterangan', 'ni.qty', 'p.nama'])
+            ->groupBy('nota_id')
+            ->map(fn ($baris) => $baris->map(
+                fn ($i) => $i->produk_id === null ? $i->keterangan : $this->angka((float) $i->qty) . ' ' . $i->nama
+            )->implode(', '));
+
+        $hal = $hal->through(fn ($n) => $this->ringkas($n) + [
+                'tanggal'      => $this->waktu($n->tanggal),
                 'nama_pembeli' => $n->nama_pembeli,
                 'armada'       => $n->armada,
                 'jumlah_item'  => (float) $n->jumlah_item,
-                'item_ringkas' => $n->item_ringkas,
+                'item_ringkas' => $ringkasItem[$n->id] ?? null,
             ]);
 
         return response()->json($hal);
@@ -202,8 +206,8 @@ class NotaController extends Controller
         // Badge tab: jumlah nota (ikut tanggal & pencarian, TIDAK ikut status)
         $hitung = $this->dasar($request)
             ->selectRaw("COUNT(*) AS semua,
-                         COUNT(*) FILTER (WHERE nota.status_bayar = 'lunas') AS lunas,
-                         COUNT(*) FILTER (WHERE nota.status_bayar = 'dp') AS dp")
+                         SUM(CASE WHEN nota.status_bayar = 'lunas' THEN 1 ELSE 0 END) AS lunas,
+                         SUM(CASE WHEN nota.status_bayar = 'dp' THEN 1 ELSE 0 END) AS dp")
             ->first();
 
         // Omzet: uang yang MASUK pada rentang tanggal (dari tabel pembayaran)
@@ -317,13 +321,13 @@ class NotaController extends Controller
             ->map(fn ($p) => [
                 'jenis'        => $p->jenis,
                 'jumlah'       => (float) $p->jumlah,
-                'dibayar_pada' => $p->dibayar_pada,
+                'dibayar_pada' => $this->waktu($p->dibayar_pada),
             ])
             ->values()
             ->all();
 
         return $this->ringkas($nota) + [
-            'tanggal'           => $nota->tanggal,
+            'tanggal'           => $this->waktu($nota->tanggal),
             'nama_pembeli'      => $nota->nama_pembeli,
             'no_hp'             => $nota->no_hp,
             'alamat_pengiriman' => $nota->alamat_pengiriman,
@@ -379,6 +383,14 @@ class NotaController extends Controller
             $request->filled('sampai')
                 ? Carbon::parse($request->query('sampai'), $tz)->endOfDay()->toIso8601String() : null,
         ];
+    }
+
+    // Nilai kolom waktu -> ISO-8601 beroffset (mis. 2026-11-07T23:30:00+07:00).
+    // PostgreSQL sudah mengirim offset; MySQL tidak (koneksi MySQL disetel ke zona
+    // waktu aplikasi di config/database.php, jadi string tanpa offset = zona aplikasi).
+    private function waktu($nilai): ?string
+    {
+        return $nilai === null ? null : Carbon::parse($nilai, config('app.timezone'))->toIso8601String();
     }
 
     private function ringkas(object $n): array

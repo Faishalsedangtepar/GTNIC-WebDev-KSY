@@ -59,6 +59,10 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
+            // Samakan zona waktu sesi MySQL dengan config('app.timezone') (Asia/Jakarta = +07:00,
+            // tanpa DST). Kolom timestamp MySQL tidak membawa offset, jadi tanpa ini jam yang
+            // keluar mengikuti zona waktu server MySQL.
+            'timezone' => env('DB_TIMEZONE', '+07:00'),
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
@@ -79,6 +83,10 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
+            // Samakan zona waktu sesi MySQL dengan config('app.timezone') (Asia/Jakarta = +07:00,
+            // tanpa DST). Kolom timestamp MySQL tidak membawa offset, jadi tanpa ini jam yang
+            // keluar mengikuti zona waktu server MySQL.
+            'timezone' => env('DB_TIMEZONE', '+07:00'),
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
