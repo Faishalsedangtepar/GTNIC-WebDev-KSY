@@ -1,8 +1,4 @@
 // Logika halaman Data Stok Barang
-  
-
-  
-
   function openModal(type, data = null) {
     if (type === 'add') {
       document.getElementById('modalAdd').classList.remove('hidden');

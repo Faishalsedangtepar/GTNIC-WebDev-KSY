@@ -9,6 +9,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\NotaController;
 use App\Http\Controllers\ZReportController;
 use App\Http\Controllers\AdminProdukController;
+use App\Http\Controllers\LaporanKeuanganController;
 
 // Halaman awal diarahkan ke login.
 Route::get('/', fn () => redirect()->route('login'));
@@ -38,7 +39,9 @@ Route::middleware('auth')->group(function () {
         ->name('admin.')
         ->group(function () {
             // admin.admin adalah view dashboard admin.
-            Route::view('/dashboard', 'admin.admin')->name('dashboard');
+            Route::get('/dashboard', [LaporanKeuanganController::class, 'index'])->name('dashboard');
+            Route::get('/laporan/export', [LaporanKeuanganController::class, 'export'])->name('laporan.export');
+
 
             // Halaman laporan stok barang.
             Route::get('/laporanstok', [AdminProdukController::class, 'index'])->name('laporanstok');
