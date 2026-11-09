@@ -80,8 +80,6 @@
 </header>
 
 
-{{-- Pengganti tinggi navbar fixed agar konten tidak tertutup --}}
-<div
-    aria-hidden="true"
-    class="h-[calc(4rem+env(safe-area-inset-top,0px))] shrink-0"
-></div>
+
+{{-- Pengganti tinggi navbar yang fixed, supaya isi halaman tidak tertutup --}}
+<div aria-hidden="true" class="h-[calc(4rem+env(safe-area-inset-top,0px))] shrink-0"></div>
