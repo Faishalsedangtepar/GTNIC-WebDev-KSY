@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>Riwayat Nota - Aura Material</title>
+  <title>Riwayat Nota - UD.Tentrem</title>
+  @include('partials.favicon')
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -411,7 +412,7 @@
 
         <div class="text-[11px] text-on-surface-variant/80 flex items-center gap-1 justify-center pb-1 shrink-0">
           <span class="material-symbols-outlined text-[14px]">verified</span>
-          <span>Laporan Z-Report Kasir Aura Material</span>
+          <span>Laporan Z-Report Kasir UD.Tentrem</span>
         </div>
       </div>
 

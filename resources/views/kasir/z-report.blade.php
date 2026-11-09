@@ -7,6 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Z-Report {{ $z['periode_label'] }} - {{ $toko['nama'] }}</title>
+  @include('partials.favicon')
   <style>
     * { box-sizing: border-box; }
     body { font-family: "Courier New", monospace; font-size: 12px; color: #000; width: 80mm; margin: 0 auto; padding: 6mm 4mm; }

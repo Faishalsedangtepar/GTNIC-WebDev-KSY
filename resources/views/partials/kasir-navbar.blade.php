@@ -69,15 +69,9 @@
 
 
             {{-- Foto profil --}}
-            <div class="h-10 w-10 shrink-0 rounded-full flex items-center justify-center p-0.5 border border-[#dce9ff]">
-
-                <img
-                    alt="{{ auth()->user()->name ?? 'Kasir' }}"
-                    class="w-8 h-8 rounded-full object-cover"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnbnWs_y2AKUny2UOq8hCe8jbScIhphtQhkKe2EsEsW59q1UlGyOOlSQ1LUcxEzlmx62NANblElcUl4SGkxyt_ojVJZ8-frBGnFIyq20qkL9Ib_ZlCIVsFYg17ShTrpnYbwqYDgG8SpG1bYgh-LFvrNXXwB3u6Ha-RHyG0jkWxGltdDmhFnKuKVgXvSL2eop0I2ZVp3xI4DF4wBT8aVwu_mSc0ErYmQh0ymzuN9hF32rrgtOCxA5cKAw"
-                >
-
-            </div>
+<div class="w-8 h-8 shrink-0 rounded-full bg-[#000000] flex items-center justify-center" aria-hidden="true">
+  <span class="material-symbols-outlined text-[#ffffff] text-[18px]">person</span>
+</div>
 
         </div>
 

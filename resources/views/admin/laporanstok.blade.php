@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Data Stok Barang - Aura Material')
+@section('title', 'Data Stok Barang - UD.Tentrem')
 @section('body_class', 'bg-surface text-on-surface antialiased selection:bg-secondary-container selection:text-on-primary')
 
 @push('head')

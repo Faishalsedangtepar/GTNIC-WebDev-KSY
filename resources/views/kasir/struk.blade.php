@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ $nota['nomor'] }}</title>
+  @include('partials.favicon')
   <style>
     @page { size: 80mm auto; margin: 4mm; }
     * { box-sizing: border-box; }

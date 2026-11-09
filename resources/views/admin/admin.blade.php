@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Laporan Keuangan - Aura Material')
+@section('title', 'Laporan Keuangan - UD.Tentrem')
 @section('body_class', 'bg-[#f8f9ff] text-[#0b1c30]')
 @section('show_date', 'ya')
 
