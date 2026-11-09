@@ -1,123 +1,79 @@
-// Logika halaman Data Stok Barang
-  
+// Logika halaman Data Stok Barang (admin).
+// Pencarian, filter kategori, dan paginasi dikerjakan server lewat query string (?q=&kategori=&per=&page=).
+// JS di sini hanya membuka/menutup modal dan mengisi form dari data baris yang diklik.
 
-  
+const MODAL_ID = { add: 'modalAdd', edit: 'modalEdit', adjust: 'modalAdjust', delete: 'modalDelete', stok: 'modalStok' };
 
-  function openModal(type, data = null) {
-    if (type === 'add') {
-      document.getElementById('modalAdd').classList.remove('hidden');
-    } else if (type === 'edit') {
-      if (data) {
-        document.getElementById('editKode').value = data.kode || '';
-        document.getElementById('editNama').value = data.nama || '';
-        document.getElementById('editKategori').value = data.kategori || '';
-        document.getElementById('editBrand').value = data.brand || '';
-        document.getElementById('editStok').value = data.stok || '';
-        document.getElementById('editSatuan').value = data.satuan || 'Zak';
-        document.getElementById('editBeli').value = data.beli || '';
-        document.getElementById('editJual').value = data.jual || '';
-      }
-      document.getElementById('modalEdit').classList.remove('hidden');
-    } else if (type === 'adjust') {
-      if (data) {
-        document.getElementById('adjustTargetText').textContent = (data.kode || '') + ' - ' + (data.nama || '');
-        document.getElementById('adjustCurrentStock').textContent = (data.stok || '0') + ' ' + (data.satuan || '');
-      }
-      document.getElementById('modalAdjust').classList.remove('hidden');
-    } else if (type === 'delete') {
-      if (data) {
-        document.getElementById('deleteTargetText').textContent = 'SKU: ' + data.kode + ' (' + data.nama + ')';
-      }
-      document.getElementById('modalDelete').classList.remove('hidden');
-    }
-  }
+const el = (id) => document.getElementById(id);
 
-  function closeModal(type) {
-    if (type === 'add') document.getElementById('modalAdd').classList.add('hidden');
-    if (type === 'edit') document.getElementById('modalEdit').classList.add('hidden');
-    if (type === 'adjust') document.getElementById('modalAdjust').classList.add('hidden');
-    if (type === 'delete') document.getElementById('modalDelete').classList.add('hidden');
-  }
-
-  function confirmDeleteAction() {
-    closeModal('delete');
-    alert('Data barang telah berhasil dihapus dari sistem gudang.');
-  }
-
-  // Close modals on Escape key
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-      closeModal('add');
-      closeModal('edit');
-      closeModal('adjust');
-      closeModal('delete');
-    }
-  });
-
-  let currentPage = 1;
-  const totalPages = 84;
-  const pageSize = 10;
-  const totalItems = 840;
-
-  function goToPage(page) {
-    if (page < 1 || page > totalPages) return;
-    currentPage = page;
-    
-    const start = ((currentPage - 1) * pageSize) + 1;
-    const end = Math.min(currentPage * pageSize, totalItems);
-    
-    const infoRange = document.getElementById('pageInfoRange');
-    const infoBadge = document.getElementById('pageCurrentBadge');
-    if (infoRange) infoRange.textContent = start + ' - ' + end;
-    if (infoBadge) infoBadge.textContent = currentPage;
-    
-    const btnPrev = document.getElementById('btnPrevPage');
-    const btnNext = document.getElementById('btnNextPage');
-    if (btnPrev) btnPrev.disabled = (currentPage === 1);
-    if (btnNext) btnNext.disabled = (currentPage === totalPages);
-    
-    const pageButtons = document.querySelectorAll('.page-btn');
-    pageButtons.forEach(btn => {
-      const p = parseInt(btn.getAttribute('data-page'));
-      if (p === currentPage) {
-        btn.className = 'page-btn w-8 h-8 rounded-[0.375rem] bg-primary-container text-on-primary font-bold text-xs flex items-center justify-center shadow-sm transition-all';
-      } else {
-        btn.className = 'page-btn w-8 h-8 rounded-[0.375rem] hover:bg-surface-container text-on-surface font-medium text-xs flex items-center justify-center transition-colors';
-      }
-    });
-  }
-
-// ===== Filter kategori & pencarian (di desain asli dipanggil tapi belum ditulis) =====
-let activeCategory = 'Semua';
-const CHIP_ACTIVE = 'category-tab px-3.5 py-1.5 rounded-[0.375rem] bg-primary-container text-on-primary font-semibold text-xs shrink-0 shadow-sm transition-transform active:scale-95 cursor-pointer';
-const CHIP_IDLE = 'category-tab px-3.5 py-1.5 rounded-[0.375rem] bg-surface-container hover:bg-surface-container-high text-on-surface font-medium text-xs shrink-0 transition-colors cursor-pointer';
-
-function filterByCategory(category) {
-  activeCategory = category;
-  document.querySelectorAll('.category-tab').forEach(function (btn) {
-    btn.className = btn.dataset.category === category ? CHIP_ACTIVE : CHIP_IDLE;
-  });
-  applyInventoryFilter();
+// 12.5 -> "12,5" ; 1200 -> "1.200"
+function angka(n) {
+  return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(Number(n) || 0);
 }
 
-function applyInventoryFilter() {
-  const q = (document.getElementById('tableSearch').value || '').trim().toLowerCase();
-  let shown = 0;
-  document.querySelectorAll('.inventory-row').forEach(function (row) {
-    const ok = (activeCategory === 'Semua' || row.dataset.category === activeCategory) && (!q || row.dataset.text.includes(q));
-    row.style.display = ok ? '' : 'none';
-    if (ok) shown++;
-  });
-  document.querySelectorAll('.inventory-card-mobile').forEach(function (card) {
-    const ok = (activeCategory === 'Semua' || card.dataset.category === activeCategory) && (!q || card.dataset.text.includes(q));
-    card.style.display = ok ? '' : 'none';
-  });
-  document.getElementById('noResultsRow').classList.toggle('hidden', shown > 0);
-  document.getElementById('noResultsMobile').classList.toggle('hidden', shown > 0);
-  document.getElementById('pageInfoRange').textContent = shown ? '1 - ' + shown : '0 - 0';
-  document.getElementById('pageTotalCount').textContent = (activeCategory === 'Semua' && !q) ? '840' : String(shown);
+function openModal(type, data = null) {
+  if (type === 'edit' && data) {
+    el('formEdit').action = el('formEdit').dataset.base + '/' + data.id;
+    el('editSku').value = data.sku || '';
+    el('editNama').value = data.nama || '';
+    el('editBrand').value = data.brand || '';
+    el('editKategori').value = data.kategori_id;
+    el('editSatuan').value = data.satuan_id;
+    el('editStokMin').value = data.stok_minimum;
+    el('editBeli').value = data.beli;
+    el('editJual').value = data.jual;
+    el('editStokInfo').textContent = angka(data.stok) + ' ' + (data.satuan || '');
+  } else if (type === 'adjust' && data) {
+    el('formAdjust').action = el('formAdjust').dataset.base + '/' + data.id + '/stok';
+    el('formAdjust').reset();
+    el('modalAdjustSub').textContent = (data.sku || '') + ' - ' + (data.nama || '');
+    el('adjustCurrentStock').textContent = angka(data.stok) + ' ' + (data.satuan || '');
+  } else if (type === 'delete' && data) {
+    el('formDelete').action = el('formDelete').dataset.base + '/' + data.id;
+    el('deleteTargetText').textContent = 'SKU: ' + (data.sku || '') + ' (' + (data.nama || '') + ')';
+  } else if (type === 'add') {
+    el('modalAdd').querySelector('form').reset();
+  } else if (type === 'stok') {
+    // Tambah stok cepat: barang dipilih dari kotak pencarian, bukan dari baris tabel
+    el('formStok').reset();
+    el('formStok').removeAttribute('action');
+    el('stokInfo').textContent = '-';
+    el('stokCari').setCustomValidity('');
+    setTimeout(() => el('stokCari').focus(), 50);
+  }
+
+  el(MODAL_ID[type]).classList.remove('hidden');
 }
 
+function closeModal(type) {
+  el(MODAL_ID[type]).classList.add('hidden');
+}
 
-// Fungsi dipanggil dari atribut onclick/oninput di HTML, jadi harus global
-Object.assign(window, { openModal, closeModal, confirmDeleteAction, goToPage, filterByCategory, applyInventoryFilter });
+// Modal "Tambah Stok Barang": cocokkan teks yang diketik dengan daftar barang (datalist)
+function pilihBarangStok() {
+  const cari = el('stokCari');
+  const form = el('formStok');
+  const teks = cari.value.trim();
+  const opsi = Array.from(document.querySelectorAll('#daftarProduk option')).find((o) => o.value === teks);
+
+  if (opsi) {
+    form.action = form.dataset.base + '/' + opsi.dataset.id + '/stok';
+    el('stokInfo').textContent = angka(opsi.dataset.stok) + ' ' + opsi.dataset.satuan;
+    cari.setCustomValidity('');
+  } else {
+    form.removeAttribute('action');
+    el('stokInfo').textContent = '-';
+    // Kosong: biarkan pesan "required" bawaan browser. Terisi tapi tidak cocok: minta pilih dari daftar.
+    cari.setCustomValidity(teks === '' ? '' : 'Pilih barang dari daftar yang muncul.');
+  }
+}
+
+if (el('stokCari')) el('stokCari').addEventListener('input', pilihBarangStok);
+
+// Tutup semua modal dengan tombol Escape
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') Object.keys(MODAL_ID).forEach(closeModal);
+});
+
+// Dipanggil dari atribut onclick di HTML, jadi harus global
+Object.assign(window, { openModal, closeModal });

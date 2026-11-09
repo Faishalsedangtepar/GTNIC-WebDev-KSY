@@ -8,6 +8,7 @@ use App\Http\Controllers\KasirController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\NotaController;
 use App\Http\Controllers\ZReportController;
+use App\Http\Controllers\AdminProdukController;
 
 // Halaman awal diarahkan ke login.
 Route::get('/', fn () => redirect()->route('login'));
@@ -40,7 +41,11 @@ Route::middleware('auth')->group(function () {
             Route::view('/dashboard', 'admin.admin')->name('dashboard');
 
             // Halaman laporan stok barang.
-            Route::view('/laporanstok', 'admin.laporanstok')->name('laporanstok');
+            Route::get('/laporanstok', [AdminProdukController::class, 'index'])->name('laporanstok');
+            Route::post('/produk', [AdminProdukController::class, 'store'])->name('produk.store');
+            Route::put('/produk/{id}', [AdminProdukController::class, 'update'])->name('produk.update')->whereNumber('id');
+            Route::post('/produk/{id}/stok', [AdminProdukController::class, 'sesuaikanStok'])->name('produk.stok')->whereNumber('id');
+            Route::delete('/produk/{id}', [AdminProdukController::class, 'destroy'])->name('produk.destroy')->whereNumber('id');
 
             // Halaman riwayat nota bulanan.
             Route::view('/riwayatbulanan', 'admin.riwayatbulanan')->name('riwayatbulanan');
