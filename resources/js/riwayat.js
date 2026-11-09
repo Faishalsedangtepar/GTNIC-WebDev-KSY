@@ -42,6 +42,12 @@
     .toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Jakarta' })
     .replace('.', ':').replace(' pukul ', ', ') + ' WIB';
 
+  // "2026-11-08" -> "8/11/2026"
+  function tglYmd(ymd) {
+    const [y, m, d] = ymd.split('-').map(Number);
+    return d + '/' + m + '/' + y;
+  }
+
   function labelTanggal(ymd) {
     const [y, m, d] = ymd.split('-').map(Number);
     return new Date(y, m - 1, d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -277,10 +283,14 @@
     inputTanggal.addEventListener('change', () => {
       state.tanggal = inputTanggal.value || HARI_INI;
       const hariIni = state.tanggal === HARI_INI;
-      const judul = $('page-title');
-      if (judul) judul.textContent = hariIni ? 'Riwayat Nota Penjualan Hari Ini' : 'Riwayat Nota ' + labelTanggal(state.tanggal);
-      $('chip-hari').textContent  = hariIni ? 'Hari Ini' : labelTanggal(state.tanggal);
-      $('ringkasan-tanggal').textContent = labelTanggal(state.tanggal);
+
+      // Semua elemen opsional: kalau tidak ada di blade, dilewati (tidak membuat error)
+      const isi = (id, teks) => { const el = $(id); if (el) el.textContent = teks; };
+      isi('label-tanggal', tglYmd(state.tanggal));
+      isi('ringkasan-tanggal', labelTanggal(state.tanggal));
+      isi('chip-hari', hariIni ? 'Hari Ini' : labelTanggal(state.tanggal));
+      isi('page-title', hariIni ? 'Riwayat Nota Penjualan Hari Ini' : 'Riwayat Nota ' + labelTanggal(state.tanggal));
+
       muatSemua();
     });
   }
