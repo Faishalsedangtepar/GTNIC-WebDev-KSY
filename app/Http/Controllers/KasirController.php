@@ -6,6 +6,7 @@ use App\Models\KeranjangItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class KasirController extends Controller
 {
@@ -48,7 +49,7 @@ class KasirController extends Controller
     public function tambah(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'produk_id' => ['required', 'integer', 'exists:produk,id'],
+            'produk_id' => ['required', 'integer', Rule::exists('produk', 'id')->where('aktif', true)],
             'qty'       => ['nullable', 'numeric', 'gt:0', 'max:99999'],
         ]);
 
