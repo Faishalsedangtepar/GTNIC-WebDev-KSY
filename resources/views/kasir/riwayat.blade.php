@@ -186,14 +186,7 @@
             <span class="material-symbols-outlined text-[18px]">receipt</span>
             Rekap Z-Report
           </button>
-          <button 
-            type="button" 
-            id="btn-export-excel" 
-            class="h-11 px-4 bg-surface-container-high text-on-surface rounded-xl font-label-lg text-label-lg font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all hover:bg-surface-container"
-          >
-            <span class="material-symbols-outlined text-[18px]">file_download</span>
-            Export
-          </button>
+
         </div>
       </div>
 
