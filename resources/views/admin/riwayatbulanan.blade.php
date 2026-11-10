@@ -1,89 +1,225 @@
 @extends('layouts.admin')
 
-@section('title', 'Riwayat Nota - UD.Tentrem')
+@section('title', 'Riwayat Nota - Aura Material')
 @section('body_class', 'bg-[#f8f9ff] text-[#0b1c30]')
 
 @push('head')
   @vite(['resources/js/riwayatbulanan.js'])
-  <style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}
-@media print {
-  body * { visibility: hidden !important; }
-  #printReportSection, #printReportSection * { visibility: visible !important; }
-  #printReportSection { position: fixed; left: 0; top: 0; width: 100vw; height: auto; margin: 0; padding: 20px; background: #fff !important; }
-}
-</style>
+  <style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style>
 @endpush
 
 @section('content')
+@php
+  $rp  = fn ($n) => 'Rp ' . number_format((float) $n, 0, ',', '.');
+  $tz  = config('app.timezone');
+
+  // Bangun URL halaman ini dengan sebagian parameter diganti (null = dibuang)
+  $link = fn (array $ubah = []) => route('admin.riwayatbulanan', array_filter(
+      array_merge(['bulan' => $bulan, 'status' => $status, 'q' => $q, 'per' => $per, 'minggu' => $minggu], $ubah),
+      fn ($v) => $v !== null && $v !== ''
+  ));
+
+  // Filter aktif ikut dibawa ke tombol ekspor dan cetak
+  $paramLaporan = array_filter(
+      ['bulan' => $bulan, 'status' => $status, 'q' => $q, 'minggu' => $minggu],
+      fn ($v) => $v !== null && $v !== ''
+  );
+
+  $chipOn  = 'status-chip px-3 py-1.5 rounded-md text-[11px] leading-[14px] tracking-[0.04em] bg-[#ffffff] text-[#0b1c30] font-bold shadow-sm transition-all whitespace-nowrap';
+  $chipOff = 'status-chip px-3 py-1.5 rounded-md text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d] hover:text-[#0b1c30] transition-all whitespace-nowrap';
+@endphp
 <div class="px-4 md:px-[1.25rem]">
-<div class="flex flex-col w-full pb-[2rem]"><!-- Page Header & Period Controls --><div class="flex flex-col md:flex-row md:items-center justify-between gap-[0.75rem] py-[1.25rem]"><div class="flex flex-col"><div class="flex flex-wrap items-center gap-[0.5rem]"><span class="text-[28px] leading-[36px] tracking-[-0.02em] font-bold text-[#0b1c30]">Riwayat Nota Penjualan</span><span class="px-2 py-0.5 rounded bg-[#dce9ff] text-[#45464d] text-[11px] leading-[14px] font-bold uppercase tracking-wider">Arsip Bulanan</span></div><p class="text-[13px] leading-[18px] font-normal text-[#76777d] mt-0.5">Daftar arsip nota transaksi material, status pelunasan mandor, dan rekapan penjualan per bulan.</p></div><!-- Period Selector & Global Actions --><div class="flex items-center flex-wrap gap-[0.5rem]"><!-- Month Dropdown / Navigation --><div class="flex items-center bg-[#ffffff] rounded-[0.25rem] shadow-sm"><button class="h-10 w-9 flex items-center justify-center text-[#76777d] hover:text-[#0b1c30] hover:bg-[#eff4ff] transition-colors" id="prevMonthBtn" onclick="navigateMonth(-1)" title="Bulan Sebelumnya"><span class="material-symbols-outlined text-[18px]">chevron_left</span></button><div class="relative"><select class="h-10 px-[0.75rem] bg-transparent text-[15px] leading-[20px] font-semibold text-[#0b1c30] focus:outline-none cursor-pointer appearance-none pr-8" id="monthSelect" onchange="handleMonthSelectChange(this.value)"><option value="2026-06">Juni 2026</option><option selected="" value="2026-05">Mei 2026</option><option value="2026-04">April 2026</option><option value="2026-03">Maret 2026</option></select><span class="material-symbols-outlined pointer-events-none absolute right-2 top-2.5 text-[18px] text-[#76777d]">expand_more</span></div><button class="h-10 w-9 flex items-center justify-center text-[#76777d] hover:text-[#0b1c30] hover:bg-[#eff4ff] transition-colors" id="nextMonthBtn" onclick="navigateMonth(1)" title="Bulan Berikutnya"><span class="material-symbols-outlined text-[18px]">chevron_right</span></button></div><!-- Action Buttons --><button class="h-10 px-[0.75rem] rounded-[0.25rem] bg-[#ffffff] shadow-sm hover:bg-[#eff4ff] text-[#0b1c30] text-[13px] leading-[16px] tracking-[0.01em] font-semibold flex items-center gap-[0.25rem] transition-colors" onclick="handleExport()"><span class="material-symbols-outlined text-[18px] text-[#76777d]">table_view</span><span class="hidden sm:inline">Ekspor CSV / Excel</span><span class="sm:hidden">Ekspor</span></button><button class="h-10 px-[0.75rem] rounded-[0.25rem] bg-[#131b2e] text-[#f8f9ff] hover:bg-[#213145] text-[13px] leading-[16px] tracking-[0.01em] font-semibold flex items-center gap-[0.25rem] transition-colors shadow-sm" onclick="openMonthlyReportModal()"><span class="material-symbols-outlined text-[18px]">print</span><span class="hidden sm:inline">Cetak Rekap Bulanan</span><span class="sm:hidden">Cetak</span></button></div></div><!-- Monthly Summary Metric Cards --><!-- Month Tab Selector Strip --><div class="flex items-center gap-1 bg-[#ffffff] p-1.5 rounded-[0.5rem] shadow-sm mb-[0.75rem] overflow-x-auto whitespace-nowrap" id="monthTabsStrip"><button class="month-tab px-[0.75rem] py-2 rounded-[0.25rem] text-[13px] leading-[16px] tracking-[0.01em] font-semibold text-[#76777d] hover:text-[#0b1c30] hover:bg-[#eff4ff] transition-colors whitespace-nowrap flex items-center gap-2 flex-shrink-0" data-month="2026-03" onclick="switchMonthTab('2026-03')"><span class="">Maret 2026</span><span class="px-1.5 py-0.5 rounded bg-[#dce9ff] text-[#45464d] text-[11px] leading-[14px] tracking-[0.04em] font-bold" id="badge-2026-03">3 Nota</span></button><button class="month-tab px-[0.75rem] py-2 rounded-[0.25rem] text-[13px] leading-[16px] tracking-[0.01em] font-semibold text-[#76777d] hover:text-[#0b1c30] hover:bg-[#eff4ff] transition-colors whitespace-nowrap flex items-center gap-2 flex-shrink-0" data-month="2026-04" onclick="switchMonthTab('2026-04')"><span class="">April 2026</span><span class="px-1.5 py-0.5 rounded bg-[#dce9ff] text-[#45464d] text-[11px] leading-[14px] tracking-[0.04em] font-bold" id="badge-2026-04">5 Nota</span></button><button class="month-tab px-[0.75rem] py-2 rounded-[0.25rem] text-[13px] leading-[16px] tracking-[0.01em] font-semibold text-[#76777d] hover:text-[#0b1c30] hover:bg-[#eff4ff] transition-colors whitespace-nowrap flex items-center gap-2 flex-shrink-0" data-month="2026-05" onclick="switchMonthTab('2026-05')"><span class="">Mei 2026</span><span class="px-1.5 py-0.5 rounded bg-[#dce9ff] text-[#45464d] text-[11px] leading-[14px] tracking-[0.04em] font-bold" id="badge-2026-05">16 Nota</span></button><button class="month-tab px-[0.75rem] py-2 rounded-[0.25rem] text-[13px] leading-[16px] tracking-[0.01em] bg-[#000000] text-[#ffffff] font-bold shadow-sm whitespace-nowrap flex items-center gap-2 flex-shrink-0" data-month="2026-06" onclick="switchMonthTab('2026-06')"><span class="">Juni 2026</span><span class="px-1.5 py-0.5 rounded bg-[#ffffff]/20 text-[#f8f9ff] text-[11px] leading-[14px] tracking-[0.04em] font-bold" id="badge-2026-06">3 Nota • Aktif</span></button></div><!-- Filter & Controls Toolbar --><div class="bg-[#ffffff] p-[0.75rem] rounded-[0.5rem] shadow-sm mb-[0.75rem] flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-[0.75rem]"><!-- Search Bar --><div class="relative flex-1"><span class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-[#76777d]">search</span><input class="h-10 w-full pl-9 pr-9 rounded-[0.25rem] bg-[#eff4ff] text-[#0b1c30] text-[13px] leading-[18px] font-normal placeholder:text-[#76777d] focus:outline-none focus:bg-[#ffffff] shadow-inner transition-colors" id="searchInput" oninput="handleSearchInput(this.value)" placeholder="Cari no. nota, nama mandor/proyek, atau jenis material..." type="text"><button class="hidden absolute right-2.5 top-2.5 text-[#76777d] hover:text-[#0b1c30] p-0.5 rounded-full" id="clearSearchBtn" onclick="clearSearch()"><span class="material-symbols-outlined text-[18px]">close</span></button></div><!-- Status Filters & Sub-filters --><div class="flex items-center flex-wrap gap-[0.5rem]"><div class="flex items-center bg-[#eff4ff] p-1 rounded-[0.25rem] overflow-x-auto whitespace-nowrap"><button class="status-chip px-3 py-1.5 rounded-md text-[11px] leading-[14px] tracking-[0.04em] bg-[#ffffff] text-[#0b1c30] font-bold shadow-sm transition-all whitespace-nowrap" id="filterBtnAll" onclick="setStatusFilter('ALL')">Semua (3)</button><button class="status-chip px-3 py-1.5 rounded-md text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d] hover:text-[#0b1c30] transition-all whitespace-nowrap" id="filterBtnLunas" onclick="setStatusFilter('LUNAS')">Lunas (2)</button><button class="status-chip px-3 py-1.5 rounded-md text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#a73a00] hover:text-[#0b1c30] transition-all whitespace-nowrap" id="filterBtnDp" onclick="setStatusFilter('DP')">DP / Tempo (1)</button></div><!-- Specific Date Range Selector in Month --><div class="flex items-center gap-1.5 bg-[#eff4ff] px-3 py-1.5 rounded-[0.25rem] text-[#76777d]"><span class="material-symbols-outlined text-[16px]">calendar_today</span><select class="bg-transparent text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#0b1c30] focus:outline-none cursor-pointer" id="dateRangeFilter" onchange="handleDateRangeFilter(this.value)"><option value="ALL">Seluruh Bulan (1 - 31 Juni)</option><option value="W1">Minggu 1 (1 - 7 Juni)</option><option value="W2">Minggu 2 (8 - 14 Juni)</option><option value="W3">Minggu 3 (15 - 21 Juni)</option><option value="W4">Minggu 4 (22 - 31 Juni)</option></select></div><!-- Page Size Selector --><div class="flex items-center gap-1.5 text-[#76777d] text-[11px] leading-[14px] tracking-[0.04em] font-bold pl-2"><span class="">Baris:</span><select class="bg-[#eff4ff] px-2 py-1 rounded text-[#0b1c30] font-semibold focus:outline-none cursor-pointer" id="pageSizeSelect" onchange="handlePageSizeChange(this.value)"><option selected="" value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option></select></div></div></div><!-- Utilitarian Data Table Card --><div class="bg-[#ffffff] rounded-[0.5rem] shadow-sm overflow-hidden flex flex-col"><div class="overflow-x-auto"><table class="w-full text-left text-[13px] leading-[18px] font-normal whitespace-nowrap"><thead><tr class="bg-[#eff4ff] text-[#45464d] text-[11px] leading-[14px] font-bold uppercase tracking-wider select-none"><th class="py-2.5 px-4 w-12 text-center">NO</th><th class="py-2.5 px-4">NO. NOTA / TANGGAL</th><th class="py-2.5 px-4">PELANGGAN / MANDOR</th><th class="py-2.5 px-4 text-right">TOTAL NOMINAL</th><th class="py-2.5 px-4 text-center">STATUS</th><th class="py-2.5 px-4 text-center w-28">AKSI</th></tr></thead><tbody class="text-[#0b1c30] divide-y-0" id="notaTableBody">
-          <tr class="hover:bg-[#eff4ff]/60 transition-colors bg-[#ffffff] border-b border-[#c6c6cd]/30" data-receipt="NOTA-2026-06-003" data-customer="Mandor Burhan" data-status="DP" data-total="Rp 12.500.000">
-            <td class="py-3 px-4 text-center text-[#76777d]">1</td>
-            <td class="py-3 px-4">
-              <div class="font-bold text-[#0b1c30]">NOTA-2026-06-003</div>
-              <div class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d]">02 Juni 2026 • 10:15</div>
-            </td>
-            <td class="py-3 px-4">
-              <div class="font-semibold text-[#0b1c30]">Mandor Burhan</div>
-              <div class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d]">Proyek Tahap II Taman Kota</div>
-            </td>
-            <td class="py-3 px-4 text-right font-bold text-[#0b1c30] text-[16px]">Rp 12.500.000</td>
-            <td class="py-3 px-4 text-center"><span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ffdbce] text-[#370e00] text-[11px] leading-[14px] font-bold uppercase tracking-wider"><span class="w-1.5 h-1.5 rounded-full bg-[#a73a00]"></span>DP / Tempo</span></td>
-            <td class="py-3 px-4 text-center">
-              <button class="h-8 px-3 rounded-[0.25rem] bg-[#dce9ff] hover:bg-[#d3e4fe] text-[#0b1c30] text-[11px] leading-[14px] tracking-[0.04em] font-semibold inline-flex items-center gap-1 transition-colors" onclick="openReceiptModal('NOTA-2026-06-003')">
-                <span class="material-symbols-outlined text-[16px]">visibility</span>
-                <span class="">Detail</span>
-              </button>
-            </td>
-          </tr>
-        
-          <tr class="hover:bg-[#eff4ff]/60 transition-colors bg-[#eff4ff]/20 border-b border-[#c6c6cd]/30" data-receipt="NOTA-2026-06-002" data-customer="Pak Surya Dinata" data-status="LUNAS" data-total="Rp 4.950.000">
-            <td class="py-3 px-4 text-center text-[#76777d]">2</td>
-            <td class="py-3 px-4">
-              <div class="font-bold text-[#0b1c30]">NOTA-2026-06-002</div>
-              <div class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d]">01 Juni 2026 • 15:20</div>
-            </td>
-            <td class="py-3 px-4">
-              <div class="font-semibold text-[#0b1c30]">Pak Surya Dinata</div>
-              <div class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d]">Perbaikan Atap Gudang</div>
-            </td>
-            <td class="py-3 px-4 text-right font-bold text-[#0b1c30] text-[16px]">Rp 4.950.000</td>
-            <td class="py-3 px-4 text-center"><span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#e5eeff] text-[#0b1c30] text-[11px] leading-[14px] font-bold uppercase tracking-wider"><span class="material-symbols-outlined text-[13px] text-[#0b1c30]">check_circle</span>LUNAS</span></td>
-            <td class="py-3 px-4 text-center">
-              <button class="h-8 px-3 rounded-[0.25rem] bg-[#dce9ff] hover:bg-[#d3e4fe] text-[#0b1c30] text-[11px] leading-[14px] tracking-[0.04em] font-semibold inline-flex items-center gap-1 transition-colors" onclick="openReceiptModal('NOTA-2026-06-002')">
-                <span class="material-symbols-outlined text-[16px]">visibility</span>
-                <span class="">Detail</span>
-              </button>
-            </td>
-          </tr>
-        
-          <tr class="hover:bg-[#eff4ff]/60 transition-colors bg-[#ffffff] border-b border-[#c6c6cd]/30" data-receipt="NOTA-2026-06-001" data-customer="Mandor Asep" data-status="LUNAS" data-total="Rp 3.100.000">
-            <td class="py-3 px-4 text-center text-[#76777d]">3</td>
-            <td class="py-3 px-4">
-              <div class="font-bold text-[#0b1c30]">NOTA-2026-06-001</div>
-              <div class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d]">01 Juni 2026 • 08:45</div>
-            </td>
-            <td class="py-3 px-4">
-              <div class="font-semibold text-[#0b1c30]">Mandor Asep</div>
-              <div class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d]">Kelanjutan Finisihing Ruko Jababeka</div>
-            </td>
-            <td class="py-3 px-4 text-right font-bold text-[#0b1c30] text-[16px]">Rp 3.100.000</td>
-            <td class="py-3 px-4 text-center"><span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#e5eeff] text-[#0b1c30] text-[11px] leading-[14px] font-bold uppercase tracking-wider"><span class="material-symbols-outlined text-[13px] text-[#0b1c30]">check_circle</span>LUNAS</span></td>
-            <td class="py-3 px-4 text-center">
-              <button class="h-8 px-3 rounded-[0.25rem] bg-[#dce9ff] hover:bg-[#d3e4fe] text-[#0b1c30] text-[11px] leading-[14px] tracking-[0.04em] font-semibold inline-flex items-center gap-1 transition-colors" onclick="openReceiptModal('NOTA-2026-06-001')">
-                <span class="material-symbols-outlined text-[16px]">visibility</span>
-                <span class="">Detail</span>
-              </button>
-            </td>
-          </tr>
-        </tbody><!-- Monthly Summary Footer Row --><tfoot><tr class="bg-[#e5eeff] text-[#0b1c30] text-[15px] leading-[20px] font-bold"><td class="py-2.5 px-4 text-center text-[11px] leading-[14px] font-bold uppercase tracking-wider text-[#76777d]" colspan="2">TOTAL REKAPITULASI</td><td class="py-2.5 px-4 text-[#76777d] text-[13px] leading-[18px] font-normal" id="footerSummaryCount">3 Transaksi Terarsip</td><td class="py-2.5 px-4 text-right text-[20px] leading-[26px] tracking-[-0.01em] font-bold text-[#0b1c30]" id="footerSummaryTotal">Rp 20.550.000</td><td class="py-2.5 px-4 text-center"><span class="px-2 py-0.5 rounded bg-[#d3e4fe] text-[#0b1c30] text-[11px] leading-[14px] tracking-[0.04em] font-bold" id="footerSummaryPercentage">66.7% Lunas</span></td><td class="py-2.5 px-4 text-center text-[#76777d] text-[11px] leading-[14px] tracking-[0.04em] font-normal" id="footerSummaryMonth">Juni 2026</td></tr></tfoot></table></div><!-- Pagination & Meta --><div class="flex flex-col sm:flex-row items-center justify-between gap-[0.75rem] p-[0.75rem] bg-[#ffffff]"><div class="text-[#76777d] text-[13px] leading-[18px] font-normal text-center sm:text-left" id="paginationInfo">Menampilkan <span class="font-bold text-[#0b1c30]">1 - 3</span> dari <span class="font-bold text-[#0b1c30]">3</span> nota transaksi bulan Juni 2026</div><div class="flex items-center gap-1 text-[13px] leading-[16px] tracking-[0.01em] font-semibold overflow-x-auto max-w-full justify-center" id="paginationButtons">
-    <button class="h-9 px-3 rounded-[0.25rem] text-[#76777d] hover:text-[#0b1c30] hover:bg-[#eff4ff] transition-colors disabled:opacity-40" onclick="changePage(0)" disabled="">
-      <span class="material-symbols-outlined text-[18px]">chevron_left</span>
-    </button>
-  <button class="h-9 w-9 rounded-[0.25rem] bg-[#000000] text-[#ffffff] font-bold shadow-sm" onclick="changePage(1)">1</button>
-    <button class="h-9 px-3 rounded-[0.25rem] text-[#76777d] hover:text-[#0b1c30] hover:bg-[#eff4ff] transition-colors disabled:opacity-40" onclick="changePage(2)" disabled="">
-      <span class="material-symbols-outlined text-[18px]">chevron_right</span>
-    </button>
-  </div></div></div><!-- Interactive Receipt Detail Modal Backdrop --><div class="fixed inset-0 z-50 bg-[#000000]/60 backdrop-blur-sm hidden flex items-center justify-center p-[0.75rem]" id="receiptModal" onclick="handleModalBackdropClick(event)"><div class="bg-[#ffffff] rounded-[0.5rem] shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]" onclick="event.stopPropagation()"><!-- Modal Header --><div class="px-[1.25rem] py-[0.75rem] bg-[#eff4ff] flex items-center justify-between"><div class="flex items-center gap-[0.5rem]"><div class="w-8 h-8 rounded bg-[#a73a00] flex items-center justify-center text-[#ffffff]"><span class="material-symbols-outlined text-[18px]">receipt</span></div><div><div class="flex items-center gap-2"><span class="text-[17px] leading-[24px] font-bold text-[#0b1c30]" id="modalNotaId">NOTA-2026-05-428</span><span class="px-2 py-0.5 rounded bg-[#ffdbce] text-[#370e00] text-[11px] leading-[14px] tracking-[0.04em] font-bold uppercase" id="modalStatusBadge">DP / Tempo</span></div><span class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d]" id="modalDepotArmada">Depot UD.Tentrem Pusat • Armada Truk 04</span></div></div><button class="h-8 w-8 rounded hover:bg-[#dce9ff] flex items-center justify-center text-[#76777d] hover:text-[#0b1c30]" onclick="closeReceiptModal()"><span class="material-symbols-outlined text-[20px]">close</span></button></div><!-- Modal Body --><div class="p-[1.25rem] overflow-y-auto space-y-[0.75rem]"><!-- Metadata Overview --><div class="grid grid-cols-2 sm:grid-cols-3 gap-[0.75rem] p-[0.75rem] bg-[#eff4ff]/40 rounded-[0.25rem]"><div><div class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d] uppercase">Mandor / Proyek</div><div class="text-[15px] leading-[20px] font-bold text-[#0b1c30]" id="modalCustomer">Mandor Asep</div><div class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d]" id="modalCustomerProject">CV Karya Mandiri</div></div><div><div class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d] uppercase">Waktu Transaksi</div><div class="text-[15px] leading-[20px] font-bold text-[#0b1c30]" id="modalDateTime">28 Mei 2026</div><div class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d]" id="modalTimeSub">15:40:12 WIB</div></div><div><div class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d] uppercase">Kasir Pelaksana</div><div class="text-[15px] leading-[20px] font-bold text-[#0b1c30]" id="modalCashier">Kasir Hendra</div><div class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d]">Terminal Kasir #01</div></div></div><!-- Material Breakdown Table --><div><div class="text-[11px] leading-[14px] font-bold text-[#76777d] uppercase tracking-wider mb-2">Rincian Item Material Terjual</div><div class="overflow-x-auto"><table class="w-full text-left text-[13px] leading-[18px] font-normal min-w-[480px]"><thead><tr class="bg-[#eff4ff] text-[#45464d] text-[11px] leading-[14px] font-bold uppercase tracking-wider select-none"><th class="py-2 px-3 text-left">ITEM MATERIAL</th><th class="py-2 px-3 text-center">QTY</th><th class="py-2 px-3 text-right">HARGA SATUAN</th><th class="py-2 px-3 text-right">SUBTOTAL</th></tr></thead><tbody class="divide-y-0" id="modalItemsTableBody"></tbody></table></div></div><!-- Financial Summary in Modal --><div class="p-[0.75rem] bg-[#eff4ff] rounded-[0.25rem] space-y-1.5"><div class="flex justify-between text-[13px] leading-[18px] font-normal text-[#76777d]"><span class="">Subtotal Material</span><span class="" id="modalSubtotal">Rp 18.250.000</span></div><div class="flex justify-between text-[13px] leading-[18px] font-normal text-[#76777d]"><span class="">Ongkos Bongkar Muat (Armada 04)</span><span class="text-[#0b1c30]">Gratis (Promo Depot)</span></div><div class="flex justify-between text-[20px] leading-[26px] tracking-[-0.01em] font-bold text-[#0b1c30] pt-2"><span class="">Total Nilai Nota</span><span class="text-[#0b1c30]" id="modalGrandTotal">Rp 18.250.000</span></div><div class="flex justify-between text-[13px] leading-[18px] font-normal text-[#a73a00] pt-1"><span class="">Uang Muka Diterima (DP)</span><span class="font-bold" id="modalDpAmount">Rp 5.000.000</span></div><div class="flex justify-between text-[15px] leading-[20px] text-[#0b1c30] font-bold"><span class="">Sisa Tagihan Tempo</span><span class="text-[#a73a00] font-bold" id="modalRemainingDebt">Rp 13.250.000</span></div></div><!-- Note & Delivery details --><div class="p-[0.75rem] bg-[#ffffff] rounded-[0.25rem] text-[#76777d] text-[13px] leading-[18px] font-normal flex items-start gap-[0.5rem]"><span class="material-symbols-outlined text-[18px] text-[#a73a00]">local_shipping</span><div><div class="text-[15px] leading-[20px] text-[#0b1c30] font-semibold" id="modalDeliveryTitle">Surat Jalan DO-2026-05-881</div><div class="" id="modalDeliveryDesc">Bongkar muatan di lokasi proyek Ruko Jababeka Blok C No. 4-6. Diterima oleh mandor proyek Asep.</div></div></div></div><!-- Modal Footer --><div class="px-[1.25rem] py-[0.75rem] bg-[#eff4ff] flex flex-wrap items-center justify-between gap-[0.5rem]"><button class="h-10 px-[0.75rem] rounded-[0.25rem] text-[#76777d] hover:text-[#0b1c30] hover:bg-[#dce9ff] text-[13px] leading-[16px] tracking-[0.01em] font-semibold transition-colors" onclick="closeReceiptModal()">Tutup</button><div class="flex items-center gap-[0.5rem]"><button class="h-10 px-[0.75rem] rounded-[0.25rem] bg-[#ffffff] shadow-sm hover:bg-[#dce9ff] text-[#0b1c30] text-[13px] leading-[16px] tracking-[0.01em] font-semibold flex items-center gap-1 transition-colors" onclick="printSingleReceipt()"><span class="material-symbols-outlined text-[18px]">print</span><span class="hidden sm:inline">Cetak Ulang Struk</span><span class="sm:hidden">Cetak</span></button><button class="h-10 px-[0.75rem] rounded-[0.25rem] bg-[#a73a00] text-[#ffffff] text-[13px] leading-[16px] tracking-[0.01em] font-bold hover:bg-[#fd651e] transition-colors shadow-sm flex items-center gap-1" id="modalActionPay" onclick="settleCurrentModalPayment()"><span class="material-symbols-outlined text-[18px]">price_check</span><span id="modalPayButtonText" class="">Lunaskan Sekarang</span></button></div></div></div></div><!-- Modal Cetak Rekap Bulanan Siap Cetak (A4) --><div class="fixed inset-0 z-50 bg-[#000000]/60 backdrop-blur-sm hidden flex items-center justify-center p-4" id="monthlyReportModal" onclick="closeMonthlyReportModal(event)"><div class="bg-[#ffffff] rounded-[0.5rem] shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh]" onclick="event.stopPropagation()"><!-- Header Modal Pratinjau --><div class="px-[1.25rem] py-3.5 bg-[#eff4ff] flex items-center justify-between border-b border-[#c6c6cd]/30"><div><h3 class="text-[17px] leading-[24px] font-bold text-[#0b1c30] flex items-center gap-2"><span class="material-symbols-outlined text-[20px] text-[#a73a00]">summarize</span>Pratinjau Rekap Penjualan Bulanan (A4)</h3><p class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d]">Laporan arsip eksekutif Depot UD.Tentrem - Siap cetak atau simpan PDF</p></div><button class="h-8 w-8 rounded hover:bg-[#dce9ff] flex items-center justify-center text-[#76777d] hover:text-[#0b1c30]" onclick="closeMonthlyReportModal()"><span class="material-symbols-outlined text-[20px]">close</span></button></div><!-- Konten Laporan Siap Cetak (A4 Layout) --><div class="p-6 md:p-8 overflow-y-auto space-y-6 bg-white text-slate-800" id="printReportSection"><!-- Kop Surat Perusahaan --><div class="flex items-center justify-between border-b-2 border-slate-900 pb-4"><div class="flex items-center gap-3"><div class="w-12 h-12 rounded bg-orange-600 flex items-center justify-center text-white font-bold text-xl">AM</div><div><h1 class="text-xl font-bold tracking-tight text-slate-900 leading-tight">UD.TENTREM DEPOT &amp; ERP</h1><p class="text-xs text-slate-500">Jl. Industri Raya No. 88, Cikarang - Jawa Barat | Telp: (021) 8983-0012</p><p class="text-[11px] text-slate-400">NPWP: 01.455.982.4-413.000 • Email: pos@@auramaterial.co.id</p></div></div><div class="text-right"><div class="text-xs font-semibold text-slate-500 uppercase tracking-widest">LAPORAN ARSIP</div><div class="text-lg font-bold text-slate-900" id="printReportTitleMonth">MEI 2026</div><div class="text-xs text-slate-400" id="printGeneratedDate">Dicetak: 28 Mei 2026</div></div></div><!-- Ringkasan Eksekutif Finansial --><div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-[0.25rem] border border-slate-200"><div class="p-2"><span class="text-xs text-slate-500 uppercase font-semibold">Total Transaksi</span><div class="text-lg font-bold text-slate-900 font-mono" id="printTotalTx">428 Nota</div></div><div class="p-2"><span class="text-xs text-slate-500 uppercase font-semibold">Total Omzet Bruto</span><div class="text-lg font-bold text-slate-900 font-mono" id="printTotalRevenue">Rp 284.500.000</div></div><div class="p-2"><span class="text-xs text-slate-500 uppercase font-semibold">Kas Diterima (Lunas/DP)</span><div class="text-lg font-bold text-emerald-700 font-mono" id="printTotalPaid">Rp 265.250.000</div></div><div class="p-2"><span class="text-xs text-slate-500 uppercase font-semibold">Piutang Sisa (Tempo)</span><div class="text-lg font-bold text-orange-600 font-mono" id="printTotalRemaining">Rp 19.250.000</div></div></div><!-- Rincian Status Nota --><div class="flex items-center justify-between text-xs text-slate-600 px-1"><span id="printStatusBreakdown" class="">Komposisi: 423 Nota Lunas (98.8%) • 5 Nota DP/Tempo (1.2%)</span><span class="">Otorisasi: Keuangan &amp; Admin Operasional</span></div><!-- Tabel Ringkas Rekap Transaksi Terkini --><div class="overflow-x-auto"><table class="w-full text-left text-xs border-collapse"><thead class="bg-slate-100 border-y border-slate-300 font-semibold text-slate-700"><tr><th class="py-2 px-2.5 text-center w-10">NO</th><th class="py-2 px-2.5">NO. NOTA</th><th class="py-2 px-2.5">TANGGAL</th><th class="py-2 px-2.5">PELANGGAN / MANDOR</th><th class="py-2 px-2.5">STATUS</th><th class="py-2 px-2.5 text-right">TOTAL</th><th class="py-2 px-2.5 text-right">SISA TEMPO</th></tr></thead><tbody class="divide-y divide-slate-200" id="printReportTableBody"></tbody></table></div><!-- Footer Tanda Tangan Cetak --><div class="pt-8 border-t border-slate-200 flex justify-between text-xs text-slate-700"><div class="text-center w-40"><p class="mb-14">Dibuat Oleh,</p><p class="font-bold underline">Budi Santoso</p><p class="text-slate-500 text-[11px]">Admin Operasional</p></div><div class="text-center w-40"><p class="mb-14">Diperiksa Oleh,</p><p class="font-bold underline">Hj. Rina Wulandari</p><p class="text-slate-500 text-[11px]">Kepala Keuangan Depot</p></div></div></div><!-- Footer Action Modal --><div class="px-[1.25rem] py-[0.75rem] bg-[#eff4ff] flex items-center justify-between"><button class="h-10 px-[0.75rem] rounded-[0.25rem] text-[#76777d] hover:text-[#0b1c30] hover:bg-[#dce9ff] text-[13px] leading-[16px] tracking-[0.01em] font-semibold transition-colors" onclick="closeMonthlyReportModal()">Tutup</button><div class="flex items-center gap-2"><button class="h-10 px-[0.75rem] rounded-[0.25rem] bg-[#ffffff] border border-[#c6c6cd] hover:bg-[#dce9ff] text-[#0b1c30] text-[13px] leading-[16px] tracking-[0.01em] font-semibold flex items-center gap-1.5 transition-colors" onclick="handleExport()"><span class="material-symbols-outlined text-[18px]">download</span>Unduh Excel / CSV</button><button class="h-10 px-[0.75rem] rounded-[0.25rem] bg-[#131b2e] text-[#f8f9ff] hover:bg-[#213145] text-[13px] leading-[16px] tracking-[0.01em] font-bold flex items-center gap-1.5 transition-colors shadow-sm" onclick="window.print()"><span class="material-symbols-outlined text-[18px]">print</span>Cetak Dokumen Laporan</button></div></div></div></div></div>
+<div class="flex flex-col w-full pb-[2rem]">
+
+<!-- Header, tombol ekspor/cetak & pilih bulan -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-[0.75rem] py-[1.25rem]">
+<div class="flex flex-col">
+<div class="flex flex-wrap items-center gap-[0.5rem]">
+<span class="text-[28px] leading-[36px] tracking-[-0.02em] font-bold text-[#0b1c30]">Riwayat Nota Penjualan</span>
+<span class="px-2 py-0.5 rounded bg-[#dce9ff] text-[#45464d] text-[11px] leading-[14px] font-bold uppercase tracking-wider">Arsip Bulanan</span>
+</div>
+<p class="text-[13px] leading-[18px] font-normal text-[#76777d] mt-0.5">Daftar arsip nota semua kasir, status pelunasan, dan rekapan penjualan per bulan.</p>
+</div>
+<div class="flex flex-wrap items-center gap-[0.5rem]">
+<a href="{{ route('admin.riwayatbulanan.export', $paramLaporan) }}" class="h-10 px-4 inline-flex items-center gap-2 rounded-[0.5rem] bg-[#ffffff] hover:bg-[#eff4ff] shadow-sm text-[#0b1c30] text-[13px] leading-[18px] font-semibold transition-colors whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px] text-[#76777d]">table_view</span>
+<span>Ekspor CSV / Excel</span>
+</a>
+<a href="{{ route('admin.riwayatbulanan.cetak', $paramLaporan) }}" target="_blank" rel="noopener" class="h-10 px-4 inline-flex items-center gap-2 rounded-[0.5rem] bg-[#131b2e] hover:bg-[#001d31] shadow-sm text-[#ffffff] text-[13px] leading-[18px] font-semibold transition-colors whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]">print</span>
+<span>Cetak Rekap Bulanan</span>
+</a>
+<div class="flex items-center bg-[#ffffff] rounded-[0.25rem] shadow-sm">
+<a href="{{ $link(['bulan' => $bulanSebelum]) }}" class="h-10 w-9 flex items-center justify-center text-[#76777d] hover:text-[#0b1c30] hover:bg-[#eff4ff] transition-colors" title="Bulan Sebelumnya"><span class="material-symbols-outlined text-[18px]">chevron_left</span></a>
+<form method="GET" action="{{ route('admin.riwayatbulanan') }}" class="relative">
+@if ($status)<input type="hidden" name="status" value="{{ $status }}">@endif
+@if ($q !== '')<input type="hidden" name="q" value="{{ $q }}">@endif
+<input type="hidden" name="per" value="{{ $per }}">
+@if ($minggu)<input type="hidden" name="minggu" value="{{ $minggu }}">@endif
+<select name="bulan" onchange="this.form.submit()" class="h-10 px-[0.75rem] bg-transparent text-[15px] leading-[20px] font-semibold text-[#0b1c30] focus:outline-none cursor-pointer appearance-none pr-8">
+@foreach ($daftarBulan as $b)
+<option value="{{ $b['nilai'] }}" @selected($b['nilai'] === $bulan)>{{ $b['label'] }}</option>
+@endforeach
+</select>
+<span class="material-symbols-outlined pointer-events-none absolute right-2 top-2.5 text-[18px] text-[#76777d]">expand_more</span>
+</form>
+<a href="{{ $link(['bulan' => $bulanBerikut]) }}" class="h-10 w-9 flex items-center justify-center text-[#76777d] hover:text-[#0b1c30] hover:bg-[#eff4ff] transition-colors" title="Bulan Berikutnya"><span class="material-symbols-outlined text-[18px]">chevron_right</span></a>
+</div>
+</div>
+</div>
+
+<!-- Ringkasan bulan -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-[0.75rem] mb-[0.75rem]">
+<div class="bg-[#ffffff] rounded-[0.5rem] shadow-sm p-4"><div class="text-[11px] leading-[14px] font-bold uppercase tracking-wider text-[#76777d]">Jumlah Nota</div><div class="text-[22px] leading-[28px] font-bold text-[#0b1c30] mt-1">{{ $ringkas['semua'] }}</div></div>
+<div class="bg-[#ffffff] rounded-[0.5rem] shadow-sm p-4"><div class="text-[11px] leading-[14px] font-bold uppercase tracking-wider text-[#76777d]">Nilai Penjualan</div><div class="text-[22px] leading-[28px] font-bold text-[#0b1c30] mt-1">{{ $rp($ringkas['penjualan']) }}</div></div>
+<div class="bg-[#ffffff] rounded-[0.5rem] shadow-sm p-4"><div class="text-[11px] leading-[14px] font-bold uppercase tracking-wider text-[#76777d]">Uang Masuk</div><div class="text-[22px] leading-[28px] font-bold text-[#0b1c30] mt-1">{{ $rp($ringkas['uang']) }}</div></div>
+<div class="bg-[#ffffff] rounded-[0.5rem] shadow-sm p-4"><div class="text-[11px] leading-[14px] font-bold uppercase tracking-wider text-[#a73a00]">Sisa Tagihan</div><div class="text-[22px] leading-[28px] font-bold text-[#a73a00] mt-1">{{ $rp($ringkas['sisa']) }}</div></div>
+</div>
+
+<!-- Pencarian & filter -->
+<div class="bg-[#ffffff] p-[0.75rem] rounded-[0.5rem] shadow-sm mb-[0.75rem] flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-[0.75rem]">
+<form method="GET" action="{{ route('admin.riwayatbulanan') }}" class="relative flex-1">
+<input type="hidden" name="bulan" value="{{ $bulan }}">
+@if ($status)<input type="hidden" name="status" value="{{ $status }}">@endif
+<input type="hidden" name="per" value="{{ $per }}">
+@if ($minggu)<input type="hidden" name="minggu" value="{{ $minggu }}">@endif
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-[#76777d]">search</span>
+<input name="q" value="{{ $q }}" type="text" placeholder="Cari nama pembeli, no. HP, atau jenis material..." class="h-10 w-full pl-9 pr-9 rounded-[0.25rem] bg-[#eff4ff] text-[#0b1c30] text-[13px] leading-[18px] font-normal placeholder:text-[#76777d] focus:outline-none focus:bg-[#ffffff] shadow-inner transition-colors">
+@if ($q !== '')
+<a href="{{ $link(['q' => null]) }}" class="absolute right-2.5 top-2.5 text-[#76777d] hover:text-[#0b1c30] p-0.5 rounded-full" title="Hapus pencarian"><span class="material-symbols-outlined text-[18px]">close</span></a>
+@endif
+</form>
+<div class="flex items-center flex-wrap gap-[0.5rem]">
+<div class="flex items-center bg-[#eff4ff] p-1 rounded-[0.25rem] overflow-x-auto whitespace-nowrap">
+<a href="{{ $link(['status' => null]) }}" class="{{ $status === null ? $chipOn : $chipOff }}">Semua ({{ $ringkas['semua'] }})</a>
+<a href="{{ $link(['status' => 'lunas']) }}" class="{{ $status === 'lunas' ? $chipOn : $chipOff }}">Lunas ({{ $ringkas['lunas'] }})</a>
+<a href="{{ $link(['status' => 'dp']) }}" class="{{ $status === 'dp' ? $chipOn : $chipOff }}">DP ({{ $ringkas['dp'] }})</a>
+<a href="{{ $link(['status' => 'belum_dibayar']) }}" class="{{ $status === 'belum_dibayar' ? $chipOn : $chipOff }}">Belum Dibayar ({{ $ringkas['belum'] }})</a>
+</div>
+<form method="GET" action="{{ route('admin.riwayatbulanan') }}" class="relative inline-flex items-center bg-[#eff4ff] rounded-[0.25rem] px-[0.75rem] h-10">
+<input type="hidden" name="bulan" value="{{ $bulan }}">
+@if ($status)<input type="hidden" name="status" value="{{ $status }}">@endif
+@if ($q !== '')<input type="hidden" name="q" value="{{ $q }}">@endif
+<input type="hidden" name="per" value="{{ $per }}">
+<span class="material-symbols-outlined text-[#76777d] text-[20px] mr-2">calendar_month</span>
+<select name="minggu" onchange="this.form.submit()" class="bg-transparent text-[13px] leading-[18px] font-semibold text-[#0b1c30] focus:outline-none cursor-pointer appearance-none pr-6">
+@foreach ($opsiMinggu as $o)
+<option value="{{ $o['nilai'] }}" @selected((string) $minggu === $o['nilai'])>{{ $o['label'] }}</option>
+@endforeach
+</select>
+<span class="material-symbols-outlined pointer-events-none absolute right-2 text-[18px] text-[#76777d]">expand_more</span>
+</form>
+<form method="GET" action="{{ route('admin.riwayatbulanan') }}" class="flex items-center gap-1.5 text-[#76777d] text-[11px] leading-[14px] tracking-[0.04em] font-bold pl-2">
+<input type="hidden" name="bulan" value="{{ $bulan }}">
+@if ($status)<input type="hidden" name="status" value="{{ $status }}">@endif
+@if ($q !== '')<input type="hidden" name="q" value="{{ $q }}">@endif
+@if ($minggu)<input type="hidden" name="minggu" value="{{ $minggu }}">@endif
+<span>Baris:</span>
+<select name="per" onchange="this.form.submit()" class="bg-[#eff4ff] px-2 py-1 rounded text-[#0b1c30] font-semibold focus:outline-none cursor-pointer">
+@foreach ([10, 25, 50, 100] as $n)
+<option value="{{ $n }}" @selected($per === $n)>{{ $n }}</option>
+@endforeach
+</select>
+</form>
+</div>
+</div>
+
+<!-- Tabel nota -->
+<div class="bg-[#ffffff] rounded-[0.5rem] shadow-sm overflow-hidden flex flex-col">
+<div class="overflow-x-auto">
+<table class="w-full text-left text-[13px] leading-[18px] font-normal whitespace-nowrap">
+<thead>
+<tr class="bg-[#eff4ff] text-[#45464d] text-[11px] leading-[14px] font-bold uppercase tracking-wider select-none">
+<th class="py-2.5 px-4 w-12 text-center">NO</th>
+<th class="py-2.5 px-4">NO. NOTA / TANGGAL</th>
+<th class="py-2.5 px-4">PEMBELI / PROYEK</th>
+<th class="py-2.5 px-4">KASIR</th>
+<th class="py-2.5 px-4 text-right">TOTAL</th>
+<th class="py-2.5 px-4 text-center">STATUS</th>
+<th class="py-2.5 px-4 text-center w-28">AKSI</th>
+</tr>
+</thead>
+<tbody class="text-[#0b1c30]">
+@forelse ($nota as $n)
+@php
+  $badge = [
+    'lunas'         => ['Lunas',         'bg-[#e5eeff] text-[#0b1c30]'],
+    'dp'            => ['DP',            'bg-[#ffdbce] text-[#370e00]'],
+    'belum_dibayar' => ['Belum Dibayar', 'bg-[#ffdad6] text-[#93000a]'],
+  ][$n['status_bayar']] ?? [$n['status_bayar'], 'bg-[#e5eeff] text-[#0b1c30]'];
+  $tgl = \Illuminate\Support\Carbon::parse($n['tanggal'])->timezone($tz)->locale('id')->translatedFormat('d F Y • H:i');
+@endphp
+<tr class="hover:bg-[#eff4ff]/60 transition-colors {{ $loop->even ? 'bg-[#eff4ff]/20' : 'bg-[#ffffff]' }} border-b border-[#c6c6cd]/30">
+<td class="py-3 px-4 text-center text-[#76777d]">{{ $nota->firstItem() + $loop->index }}</td>
+<td class="py-3 px-4">
+<div class="font-bold text-[#0b1c30]">{{ $n['nomor'] }}</div>
+<div class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d]">{{ $tgl }}</div>
+</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-[#0b1c30]">{{ $n['nama_pembeli'] ?: 'Pembeli Umum' }}</div>
+<div class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#76777d] max-w-[22rem] truncate">{{ $n['item_ringkas'] }}</div>
+</td>
+<td class="py-3 px-4 text-[#45464d]">{{ $n['kasir'] }}</td>
+<td class="py-3 px-4 text-right">
+<div class="font-bold text-[#0b1c30] text-[16px]">{{ $rp($n['total']) }}</div>
+@if ($n['sisa'] > 0)<div class="text-[11px] leading-[14px] font-bold text-[#a73a00]">Sisa {{ $rp($n['sisa']) }}</div>@endif
+</td>
+<td class="py-3 px-4 text-center"><span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full {{ $badge[1] }} text-[11px] leading-[14px] font-bold uppercase tracking-wider">{{ $badge[0] }}</span></td>
+<td class="py-3 px-4 text-center">
+<button type="button" class="h-8 px-3 rounded-[0.25rem] bg-[#dce9ff] hover:bg-[#d3e4fe] text-[#0b1c30] text-[11px] leading-[14px] tracking-[0.04em] font-semibold inline-flex items-center gap-1 transition-colors" onclick="bukaDetail({{ $n['id'] }})">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+<span>Detail</span>
+</button>
+</td>
+</tr>
+@empty
+<tr><td colspan="7" class="py-10 text-center text-[#76777d]"><div class="flex flex-col items-center gap-2"><span class="material-symbols-outlined text-[32px]">receipt_long</span><span class="font-medium text-[13px]">Tidak ada nota pada bulan dan filter ini</span></div></td></tr>
+@endforelse
+</tbody>
+</table>
+</div>
+
+<!-- Paginasi -->
+<div class="flex flex-col md:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-[#c6c6cd]/30 text-[#76777d] text-[12px]">
+<span>Menampilkan <b class="text-[#0b1c30]">{{ $nota->firstItem() ?? 0 }} - {{ $nota->lastItem() ?? 0 }}</b> dari <b class="text-[#0b1c30]">{{ $nota->total() }}</b> nota • Halaman {{ $nota->currentPage() }} / {{ $nota->lastPage() }}</span>
+<div class="flex items-center gap-1">
+@if ($nota->onFirstPage())
+<span class="h-9 px-3 rounded-[0.25rem] flex items-center opacity-40"><span class="material-symbols-outlined text-[18px]">chevron_left</span></span>
+@else
+<a href="{{ $nota->previousPageUrl() }}" class="h-9 px-3 rounded-[0.25rem] flex items-center hover:text-[#0b1c30] hover:bg-[#eff4ff] transition-colors"><span class="material-symbols-outlined text-[18px]">chevron_left</span></a>
+@endif
+@foreach (range(max(1, $nota->currentPage() - 2), min($nota->lastPage(), $nota->currentPage() + 2)) as $i)
+<a href="{{ $nota->url($i) }}" class="h-9 w-9 rounded-[0.25rem] flex items-center justify-center {{ $i === $nota->currentPage() ? 'bg-[#000000] text-[#ffffff] font-bold shadow-sm' : 'hover:text-[#0b1c30] hover:bg-[#eff4ff] transition-colors' }}">{{ $i }}</a>
+@endforeach
+@if ($nota->hasMorePages())
+<a href="{{ $nota->nextPageUrl() }}" class="h-9 px-3 rounded-[0.25rem] flex items-center hover:text-[#0b1c30] hover:bg-[#eff4ff] transition-colors"><span class="material-symbols-outlined text-[18px]">chevron_right</span></a>
+@else
+<span class="h-9 px-3 rounded-[0.25rem] flex items-center opacity-40"><span class="material-symbols-outlined text-[18px]">chevron_right</span></span>
+@endif
+</div>
+</div>
+</div>
+
+<!-- Modal rincian nota (isinya diisi oleh riwayatbulanan.js dari /admin/nota/{id}) -->
+<div class="fixed inset-0 z-50 bg-[#000000]/60 backdrop-blur-sm hidden flex items-center justify-center p-[0.75rem]" id="detailModal" data-base="{{ url('/admin/nota') }}" data-tz="{{ $tz }}" data-csrf="{{ csrf_token() }}" onclick="if (event.target === this) tutupDetail()">
+<div class="bg-[#ffffff] rounded-2xl shadow-2xl max-w-lg w-full max-h-[92vh] flex flex-col overflow-hidden">
+<div class="p-5 border-b border-[#c6c6cd]/30 flex items-start justify-between gap-3">
+<div>
+<div class="flex items-center gap-2"><span class="text-[18px] font-bold text-[#0b1c30]" id="dmNomor">-</span><span class="px-2.5 py-0.5 rounded-full bg-[#131b2e] text-[#ffffff] text-[11px] font-bold" id="dmStatus"></span></div>
+<div class="text-[12px] text-[#76777d] mt-1" id="dmMeta"></div>
+</div>
+<button type="button" class="h-9 w-9 rounded-full bg-[#dce9ff] hover:bg-[#d3e4fe] flex items-center justify-center shrink-0" onclick="tutupDetail()"><span class="material-symbols-outlined text-[20px]">close</span></button>
+</div>
+<div class="hidden mx-5 mt-4 px-3 py-2 rounded-[0.5rem] text-[13px] font-semibold" id="dmNotif"></div>
+<div class="p-5 overflow-y-auto flex flex-col gap-4" id="dmBody"></div>
+<div class="p-4 border-t border-[#c6c6cd]/30 flex flex-wrap items-center gap-2">
+<button type="button" id="dmLunasi" class="hidden basis-full h-11 rounded-[0.5rem] bg-[#a73a00] hover:bg-[#8a3000] disabled:opacity-60 text-[#ffffff] font-semibold text-[14px] items-center justify-center gap-2" onclick="lunasiNota()"><span class="material-symbols-outlined text-[18px]">price_check</span><span id="dmLunasiLabel">Lunaskan Sekarang</span></button>
+<button type="button" class="flex-1 h-11 rounded-[0.5rem] border border-[#c6c6cd] bg-[#ffffff] hover:bg-[#eff4ff] font-semibold text-[14px]" onclick="tutupDetail()">Tutup</button>
+<a id="dmCetak" href="#" target="_blank" rel="noopener" class="flex-[1.4] h-11 rounded-[0.5rem] bg-[#000000] hover:bg-[#213145] text-[#ffffff] font-semibold text-[14px] flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[18px]">print</span>Cetak Ulang</a>
+</div>
+</div>
+</div>
+
+</div>
 </div>
 @endsection

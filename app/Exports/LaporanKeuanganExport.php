@@ -3,18 +3,11 @@
 namespace App\Exports;
 
 use Carbon\Carbon;
-use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
-class LaporanKeuanganExport implements FromArray, WithMultipleSheets
+class LaporanKeuanganExport implements WithMultipleSheets
 {
     public function __construct(private array $data, private Carbon $bulan) {}
-
-    // Dibutuhkan agar class ini dikenali sebagai export; isi sebenarnya ada di sheets().
-    public function array(): array
-    {
-        return [];
-    }
 
     public function sheets(): array
     {
@@ -33,6 +26,14 @@ class LaporanKeuanganExport implements FromArray, WithMultipleSheets
             $total > 0 ? round($k->omzet / $total * 100, 1) : 0,
             (float) $k->laba,
         ])->all();
+        if ($this->data['ongkir_proteksi'] > 0) {
+            $kategori[] = [
+                'Ongkir & Proteksi',
+                $this->data['ongkir_proteksi'],
+                $total > 0 ? round($this->data['ongkir_proteksi'] / $total * 100, 1) : 0,
+                0,
+            ];
+        }
         $kategori[] = ['TOTAL', $total, 100, $this->data['laba']];
 
         return [

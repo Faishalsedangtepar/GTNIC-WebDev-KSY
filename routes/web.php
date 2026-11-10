@@ -10,6 +10,7 @@ use App\Http\Controllers\NotaController;
 use App\Http\Controllers\ZReportController;
 use App\Http\Controllers\AdminProdukController;
 use App\Http\Controllers\LaporanKeuanganController;
+use App\Http\Controllers\AdminRiwayatController;
 
 // Halaman awal diarahkan ke login.
 Route::get('/', fn () => redirect()->route('login'));
@@ -41,6 +42,7 @@ Route::middleware('auth')->group(function () {
             // admin.admin adalah view dashboard admin.
             Route::get('/dashboard', [LaporanKeuanganController::class, 'index'])->name('dashboard');
             Route::get('/laporan/export', [LaporanKeuanganController::class, 'export'])->name('laporan.export');
+            Route::get('/laporan/cetak', [LaporanKeuanganController::class, 'cetak'])->name('laporan.cetak');
 
 
             // Halaman laporan stok barang.
@@ -51,7 +53,12 @@ Route::middleware('auth')->group(function () {
             Route::delete('/produk/{id}', [AdminProdukController::class, 'destroy'])->name('produk.destroy')->whereNumber('id');
 
             // Halaman riwayat nota bulanan.
-            Route::view('/riwayatbulanan', 'admin.riwayatbulanan')->name('riwayatbulanan');
+            Route::get('/riwayatbulanan', [AdminRiwayatController::class, 'index'])->name('riwayatbulanan');
+            Route::get('/nota/{id}', [AdminRiwayatController::class, 'show'])->name('nota.show')->whereNumber('id');
+            Route::get('/nota/{id}/cetak', [AdminRiwayatController::class, 'cetak'])->name('nota.cetak')->whereNumber('id');
+            Route::post('/nota/{id}/lunasi', [AdminRiwayatController::class, 'lunasi'])->name('nota.lunasi')->whereNumber('id');
+            Route::get('/riwayatbulanan/export', [AdminRiwayatController::class, 'exportBulanan'])->name('riwayatbulanan.export');
+            Route::get('/riwayatbulanan/cetak', [AdminRiwayatController::class, 'cetakBulanan'])->name('riwayatbulanan.cetak');
         });
 
     // Halaman khusus kasir.

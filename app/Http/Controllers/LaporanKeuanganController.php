@@ -33,4 +33,16 @@ class LaporanKeuanganController extends Controller
             'laporan-keuangan-' . $bulan->format('Y-m') . '.xlsx'
         );
     }
+
+    // GET /admin/laporan/cetak : rekap laporan keuangan siap cetak (tab baru)
+    public function cetak(Request $request, LaporanKeuanganService $svc)
+    {
+        $bulan = $svc->bulan($request->query('bulan'));
+
+        return view('admin.laporan_cetak', [
+            'data'      => $svc->ringkasan($bulan),
+            'namaBulan' => $bulan->copy()->locale('id')->translatedFormat('F Y'),
+            'dicetak'   => now()->locale('id')->translatedFormat('d F Y, H:i'),
+        ]);
+    }
 }

@@ -13,6 +13,7 @@
   $rp = fn ($n) => 'Rp ' . number_format($n, 0, ',', '.');
   $warna = ['#a73a00', '#131b2e', '#fd651e', '#188ace', '#76777d'];
   $namaBulan = $bulan->copy()->locale('id')->translatedFormat('F Y');
+  $adaExtra  = $data['ongkir_proteksi'] > 0;
 @endphp
 
 @section('content')
@@ -40,10 +41,10 @@ Rekapitulasi total omzet dan estimasi laba kotor penjualan material selama satu 
 @endforeach
 </select>
 </div>
-<button class="inline-flex items-center gap-[0.25rem] bg-[#eff4ff] hover:bg-[#e5eeff] text-[#0b1c30] text-[15px] leading-[20px] font-semibold px-[0.75rem] py-[0.5rem] rounded-[0.25rem] transition-colors shadow-sm" onclick="window.print()" type="button">
+<a href="{{ route('admin.laporan.cetak', ['bulan' => $bulan->format('Y-m')]) }}" target="_blank" rel="noopener" class="inline-flex items-center gap-[0.25rem] bg-[#eff4ff] hover:bg-[#e5eeff] text-[#0b1c30] text-[15px] leading-[20px] font-semibold px-[0.75rem] py-[0.5rem] rounded-[0.25rem] transition-colors shadow-sm">
 <span class="material-symbols-outlined text-[18px]">print</span>
 <span>Cetak Ringkasan</span>
-</button>
+</a>
 <a href="{{ route('admin.laporan.export', ['bulan' => $bulan->format('Y-m')]) }}" class="inline-flex items-center gap-[0.25rem] bg-[#131b2e] hover:bg-[#001d31] text-[#ffffff] text-[15px] leading-[20px] font-semibold px-[0.75rem] py-[0.5rem] rounded-[0.25rem] transition-colors shadow-sm">
 <span class="material-symbols-outlined text-[18px]">file_download</span>
 <span>Ekspor Excel</span>
@@ -55,7 +56,7 @@ Rekapitulasi total omzet dan estimasi laba kotor penjualan material selama satu 
 <div class="grid grid-cols-1 gap-[1.25rem] lg:grid-cols-2">
 <div class="flex flex-col justify-between bg-[#ffffff] p-[2rem] rounded-[0.5rem] shadow-sm relative overflow-hidden">
 <div class="space-y-[0.25rem]">
-<span class="text-[13px] leading-[16px] font-semibold text-[#45464d] uppercase tracking-wider">Omzet Bulan Ini</span>
+<span class="text-[13px] leading-[16px] font-semibold text-[#45464d] uppercase tracking-wider">Omzet Per Bulan</span>
 <div class="pt-[0.25rem]">
 <span class="text-[28px] leading-[36px] font-bold text-[#0b1c30] tracking-tight block">{{ $rp($data['omzet']) }}</span>
 </div>
@@ -103,7 +104,7 @@ Rekapitulasi total omzet dan estimasi laba kotor penjualan material selama satu 
   $persen = $data['omzet'] > 0 ? $k->omzet / $data['omzet'] * 100 : 0;
   $lebar  = number_format($persen, 1, '.', '');
 @endphp
-<div class="flex flex-col space-y-[0.25rem] {{ $loop->last && $loop->count % 2 === 1 ? 'lg:col-span-2' : '' }}">
+<div class="flex flex-col space-y-[0.25rem] {{ $loop->last && $loop->count % 2 === 1 && ! $adaExtra ? 'lg:col-span-2' : '' }}">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-[0.25rem]">
 <span class="w-2.5 h-2.5 rounded-full" @style(["background-color: $warnaK"])></span>
@@ -121,6 +122,24 @@ Rekapitulasi total omzet dan estimasi laba kotor penjualan material selama satu 
 @empty
 <p class="text-[13px] text-[#45464d] lg:col-span-2">Belum ada penjualan pada {{ $namaBulan }}.</p>
 @endforelse
+@if ($adaExtra)
+@php $persenX = $data['omzet'] > 0 ? $data['ongkir_proteksi'] / $data['omzet'] * 100 : 0; @endphp
+<div class="flex flex-col space-y-[0.25rem] {{ $data['kategori']->count() % 2 === 0 ? 'lg:col-span-2' : '' }}">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-[0.25rem]">
+<span class="w-2.5 h-2.5 rounded-full" @style(["background-color: #c6c6cd"])></span>
+<span class="text-[15px] leading-[20px] font-bold text-[#0b1c30]">Ongkir &amp; Proteksi</span>
+</div>
+<div class="flex items-center gap-[0.5rem]">
+<span class="text-[15px] leading-[20px] tracking-[-0.01em] text-[#0b1c30] font-bold">{{ $rp($data['ongkir_proteksi']) }}</span>
+<span class="text-[11px] leading-[14px] tracking-[0.04em] font-bold text-[#45464d]">{{ number_format($persenX, 1, '.', '') }}%</span>
+</div>
+</div>
+<div class="w-full bg-[#dce9ff] h-2 rounded-full overflow-hidden">
+<div class="h-full rounded-full" @style(["width: " . number_format($persenX, 1, '.', '') . "%", "background-color: #c6c6cd"])></div>
+</div>
+</div>
+@endif
 </div>
 </div>
 
@@ -175,11 +194,10 @@ Rekapitulasi total omzet dan estimasi laba kotor penjualan material selama satu 
 <span class="material-symbols-outlined text-[#a73a00] text-[22px] flex-shrink-0 mt-0.5">info</span>
 <div class="flex flex-col space-y-[0.25rem] text-[#45464d] text-[13px] leading-[18px] font-normal">
 <span class="text-[15px] leading-[20px] font-bold text-[#0b1c30]">Catatan Finansial Penjualan</span>
-<p>Omzet dihitung dari total harga barang pada nota (tidak termasuk ongkir dan biaya proteksi). Estimasi laba kotor dihitung dari selisih harga jual dengan harga beli produk saat ini, dan tidak memperhitungkan beban operasional listrik, gaji pegawai, maupun bahan bakar armada kirim.</p>
+<p>Omzet dihitung dari total tagihan nota (harga barang ditambah ongkir dan biaya proteksi). Estimasi laba kotor dihitung dari selisih harga jual dengan harga beli produk saat ini, dan tidak memperhitungkan beban operasional listrik, gaji pegawai, maupun bahan bakar armada kirim.</p>
 </div>
 </div>
 
 </div>
 </div>
 @endsection
-

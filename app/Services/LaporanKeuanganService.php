@@ -24,19 +24,23 @@ class LaporanKeuanganService
         $awal  = $bulan->copy()->startOfMonth();
         $akhir = $bulan->copy()->endOfMonth();
 
-        // Omzet = jumlah subtotal item barang (tidak termasuk ongkir / biaya proteksi).
+        // Subtotal per item (dipakai untuk kontribusi kategori & laba).
         $subtotal = 'COALESCE(nota_item.subtotal, nota_item.harga_satuan * nota_item.qty)';
 
-        // 1. Omzet per nota -> dikelompokkan per hari di PHP (aman untuk MySQL/SQLite/Postgres).
+        // Rentang waktu dengan offset zona waktu (sama seperti halaman Riwayat Nota).
+        $dari   = $awal->toIso8601String();
+        $sampai = $akhir->toIso8601String();
+        $tz     = config('app.timezone');
+
+        // 1. Omzet = nota.total (total tagihan, termasuk ongkir & biaya proteksi), sama dengan Riwayat Nota.
         $notas = DB::table('nota')
-            ->leftJoin('nota_item', 'nota_item.nota_id', '=', 'nota.id')
-            ->whereBetween('nota.tanggal', [$awal, $akhir])
-            ->groupBy('nota.id', 'nota.tanggal', 'nota.status_bayar')
-            ->select('nota.id', 'nota.tanggal', 'nota.status_bayar', DB::raw("COALESCE(SUM($subtotal), 0) as omzet"))
+            ->where('nota.tanggal', '>=', $dari)
+            ->where('nota.tanggal', '<=', $sampai)
+            ->select('nota.id', 'nota.tanggal', 'nota.status_bayar', 'nota.total as omzet')
             ->get();
 
         $harian = $notas
-            ->groupBy(fn ($n) => Carbon::parse($n->tanggal)->toDateString())
+            ->groupBy(fn ($n) => Carbon::parse($n->tanggal)->timezone($tz)->toDateString())
             ->sortKeys()
             ->map(function ($grup, $tgl) {
                 return [
@@ -56,7 +60,8 @@ class LaporanKeuanganService
             ->join('nota', 'nota.id', '=', 'nota_item.nota_id')
             ->leftJoin('produk', 'produk.id', '=', 'nota_item.produk_id')
             ->leftJoin('kategori_produk', 'kategori_produk.id', '=', 'produk.kategori_id')
-            ->whereBetween('nota.tanggal', [$awal, $akhir])
+            ->where('nota.tanggal', '>=', $dari)
+            ->where('nota.tanggal', '<=', $sampai)
             ->groupBy(DB::raw($kat))
             ->select(
                 DB::raw("$kat as nama"),
@@ -68,11 +73,15 @@ class LaporanKeuanganService
 
         $totalOmzet = (float) $harian->sum('omzet');
         $jumlahNota = $notas->count();
+
+        // Selisih omzet dengan jumlah item barang = ongkir & biaya proteksi (supaya total kategori cocok).
+        $ongkirProteksi = max(0, round($totalOmzet - (float) $kategori->sum('omzet'), 2));
         $hari       = $bulan->isSameMonth(now()) ? now()->day : $bulan->daysInMonth;
 
         return [
             'omzet'          => $totalOmzet,
             'laba'           => (float) $kategori->sum('laba'),
+            'ongkir_proteksi' => $ongkirProteksi,
             'jumlah_nota'    => $jumlahNota,
             'belum_lunas'    => (int) $harian->sum('belum_lunas'),
             'hari'           => $hari,
