@@ -3,9 +3,10 @@
 namespace App\Exports;
 
 use Carbon\Carbon;
+use Maatwebsite\Excel\Concerns\Export;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
-class LaporanKeuanganExport implements WithMultipleSheets
+class LaporanKeuanganExport implements Export, WithMultipleSheets
 {
     public function __construct(private array $data, private Carbon $bulan) {}
 
@@ -26,6 +27,7 @@ class LaporanKeuanganExport implements WithMultipleSheets
             $total > 0 ? round($k->omzet / $total * 100, 1) : 0,
             (float) $k->laba,
         ])->all();
+
         if ($this->data['ongkir_proteksi'] > 0) {
             $kategori[] = [
                 'Ongkir & Proteksi',
