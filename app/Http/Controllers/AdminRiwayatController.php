@@ -50,9 +50,8 @@ class AdminRiwayatController extends Controller
         $uangMasuk = $this->uangMasuk($awal, $akhir);
 
         // Daftar bulan untuk dropdown: semua bulan yang punya nota + bulan yang sedang dilihat
-        $tzSql = preg_replace('/[^A-Za-z0-9_\/+\-]/', '', $tz);
         $bulanList = DB::table('nota')
-            ->selectRaw("DISTINCT to_char(tanggal AT TIME ZONE '{$tzSql}', 'YYYY-MM') AS b")
+            ->selectRaw('DISTINCT ' . $this->sqlBulan($tz) . ' AS b')
             ->orderByDesc('b')
             ->pluck('b')
             ->all();
@@ -278,13 +277,67 @@ class AdminRiwayatController extends Controller
         return $opsi;
     }
 
+    // ---------------------------------------------------- kompatibilitas DB
+    // Server produksi memakai MySQL, pengembangan lokal memakai PostgreSQL.
+
+    private function pg(): bool
+    {
+        return DB::getDriverName() === 'pgsql';
+    }
+
+    // Nilai batas waktu untuk WHERE. MySQL (sesi +07:00, lihat config/database.php) dibandingkan
+    // dengan waktu lokal tanpa offset; PostgreSQL boleh memakai ISO 8601 beroffset.
+    private function tanggalParam(Carbon $c): string
+    {
+        return $this->pg() ? $c->toIso8601String() : $c->format('Y-m-d H:i:s');
+    }
+
+    // Ekspresi "YYYY-MM" dari kolom tanggal, dalam zona waktu aplikasi.
+    private function sqlBulan(string $tz): string
+    {
+        if ($this->pg()) {
+            $tzSql = preg_replace('/[^A-Za-z0-9_\/+\-]/', '', $tz);
+            return "to_char(tanggal AT TIME ZONE '{$tzSql}', 'YYYY-MM')";
+        }
+
+        return "DATE_FORMAT(tanggal, '%Y-%m')";
+    }
+
+    // Subquery ringkasan item per nota, mis. "2.5 Pasir Muntilan, Ongkir".
+    private function sqlItemRingkas(): string
+    {
+        if ($this->pg()) {
+            return "(
+                SELECT string_agg(
+                    CASE WHEN ni.produk_id IS NULL THEN ni.keterangan
+                         ELSE trim_scale(ni.qty)::text || ' ' || p.nama END,
+                    ', ' ORDER BY ni.id)
+                FROM nota_item ni
+                LEFT JOIN produk p ON p.id = ni.produk_id
+                WHERE ni.nota_id = nota.id
+            ) AS item_ringkas";
+        }
+
+        return "(
+                SELECT GROUP_CONCAT(
+                    CASE WHEN ni.produk_id IS NULL THEN ni.keterangan
+                         ELSE CONCAT(
+                             TRIM(TRAILING '.' FROM TRIM(TRAILING '0' FROM CAST(ni.qty AS CHAR))),
+                             ' ', p.nama) END
+                    ORDER BY ni.id SEPARATOR ', ')
+                FROM nota_item ni
+                LEFT JOIN produk p ON p.id = ni.produk_id
+                WHERE ni.nota_id = nota.id
+            ) AS item_ringkas";
+    }
+
     // Semua nota (semua kasir) pada bulan itu + pencarian
     private function dasarQuery(Carbon $awal, Carbon $akhir, string $q)
     {
         return DB::table('nota')
             ->join('pengguna as u', 'u.id', '=', 'nota.kasir_id')
-            ->where('nota.tanggal', '>=', $awal->toIso8601String())
-            ->where('nota.tanggal', '<=', $akhir->toIso8601String())
+            ->where('nota.tanggal', '>=', $this->tanggalParam($awal))
+            ->where('nota.tanggal', '<=', $this->tanggalParam($akhir))
             ->when($q !== '', function ($x) use ($q) {
                 $kata = '%' . $q . '%';
                 $x->where(function ($w) use ($kata) {
@@ -307,15 +360,7 @@ class AdminRiwayatController extends Controller
     {
         return $query
             ->select('nota.*', 'u.username as kasir')
-            ->selectRaw("(
-                SELECT string_agg(
-                    CASE WHEN ni.produk_id IS NULL THEN ni.keterangan
-                         ELSE trim_scale(ni.qty)::text || ' ' || p.nama END,
-                    ', ' ORDER BY ni.id)
-                FROM nota_item ni
-                LEFT JOIN produk p ON p.id = ni.produk_id
-                WHERE ni.nota_id = nota.id
-            ) AS item_ringkas")
+            ->selectRaw($this->sqlItemRingkas())
             ->when($status, fn ($x) => $x->where('nota.status_bayar', $status));
     }
 
@@ -333,8 +378,8 @@ class AdminRiwayatController extends Controller
     private function uangMasuk(Carbon $awal, Carbon $akhir): float
     {
         return (float) DB::table('pembayaran')
-            ->where('dibayar_pada', '>=', $awal->toIso8601String())
-            ->where('dibayar_pada', '<=', $akhir->toIso8601String())
+            ->where('dibayar_pada', '>=', $this->tanggalParam($awal))
+            ->where('dibayar_pada', '<=', $this->tanggalParam($akhir))
             ->sum('jumlah');
     }
 
