@@ -7,6 +7,11 @@ RUN npm run build
 
 FROM serversideup/php:8.4-fpm-nginx
 ENV AUTORUN_ENABLED=true
+
+USER root
+RUN install-php-extensions gd
+USER www-data
+
 COPY --chown=www-data:www-data . /var/www/html
 RUN mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
 RUN composer install --no-dev --optimize-autoloader --no-interaction
